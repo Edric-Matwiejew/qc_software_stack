@@ -1,0 +1,24 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr {CuPy is a NumPy/SciPy-compatible array library for GPU-accelerated computing with Python.}
+}
+
+module-whatis "Name: cuQUANTUM CUPYVERSION"
+module-whatis "CUDA Version: CUDAVERSION"
+module-whatis "Documentation: https://docs.cupy.dev/"
+
+prereq-any nvhpc-openmpi3 nvhpc
+prereq python/PYTHONVERSION
+
+set CUPY_ROOT "CUPYROOT"
+
+setenv CUPY_ROOT "$CUPY_ROOT"
+prepend-path PATH "$CUPY_ROOT/bin"
+prepend-path LIBRARY_PATH "$CUPY_ROOT/lib/"
+prepend-path LD_LIBRARY_PATH "$CUPY_ROOT/lib/"
+prepend-path CPATH "$CUPY_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUPY_ROOT/lib/"
+prepend-path CMAKE_PREFIX_PATH "$CUPY_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUPY_ROOT/lib/"
+prepend-path PYTHONPATH "$CUPY_ROOT/lib/pythonPYTHONVERSION/site-packages"
+prepend-path CUDA_PATH "CUDAPATH"

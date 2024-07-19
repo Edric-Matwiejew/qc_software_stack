@@ -6,10 +6,11 @@ proc ModulesHelp { } {
 module-whatis "Name: cuTENSOR CUTENSORVERSION"
 module-whatis "CUDA Version: CUDAVERSION"
 
-prereq-any nvhpc nvhpc-byo-compiler nvhpc-hpcx-cuda12 nvhpc-hpcx nvhpc-nompi nvhpc-openmpi3 
+prereq-any nvhpc nvhpc-openmpi3
 
 set CUTENSOR_ROOT "CUTENSORROOT"
 
+setenv CUTENSOR_ROOT "$CUTENSOR_ROOT"
 prepend-path LIBRARY_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
 prepend-path LD_LIBRARY_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
 prepend-path CPATH "$CUTENSOR_ROOT/include/"

@@ -1,0 +1,25 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr {NVIDIA cuQuantum Python provides Python bindings and high-level object-oriented models for accessing the full functionalities of NVIDIA cuQuantum SDK from Python.}
+}
+
+module-whatis "Name: cuQUANTUM CUQUANTUMPYTHONVERSION"
+module-whatis "CUDA Version: CUDAVERSION"
+module-whatis "Documentation: https://docs.nvidia.com/cuda/cuquantum"
+
+prereq-any nvhpc-openmpi3 nvhpc
+prereq cuquantum/CUQUANTUMVERSION
+prereq python/PYTHONVERSION
+prereq py-PYTHONVERSION-cupy/CUPYVERSION
+
+set CUQUANTUM_PYTHON_ROOT "CUQUANTUMPYTHONROOT"
+
+setenv CUQUANTUM_PYTHON_ROOT "$CUQUANTUM_PYTHON_ROOT"
+prepend-path PATH "$CUQUANTUM_PYTHON_ROOT/bin"
+prepend-path LIBRARY_PATH "$CUQUANTUM_PYTHON_ROOT/lib/"
+prepend-path LD_LIBRARY_PATH "$CUQUANTUM_PYTHON_ROOT/lib/"
+prepend-path CPATH "$CUQUANTUM_PYTHON_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_PYTHON_ROOT/lib/"
+prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_PYTHON_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_PYTHON_ROOT/lib/"
+prepend-path PYTHONPATH "$CUQUANTUM_PYTHON_ROOT/lib/pythonPYTHONVERSION/site-packages"

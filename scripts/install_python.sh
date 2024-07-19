@@ -2,8 +2,6 @@
 
 source settings.sh
 
-PYTHON_VERSIONS=( 3.10 3.12 )
-PYTHON_DEFAULT_VERSION=3.10
 SETUPTOOLS_VERSION=71.0.0
 PIP_VERSION=24.1.2
 LIBFFI_VERSION=3.4.6 # required for the Python ctypes module

@@ -7,13 +7,13 @@ module-whatis "Name: cuQUANTUM CUQUANTUMVERSION"
 module-whatis "CUDA Version: CUDAVERSION"
 module-whatis "Documentation: https://docs.nvidia.com/cuda/cuquantum/24.03.0/"
 
-prereq mpi/mpich-aarch64
-prereq-any nvhpc nvhpc-byo-compiler nvhpc-hpcx-cuda12 nvhpc-hpcx nvhpc-nompi 
-conflict nvhpc-openmpi3 
+prereq-all nvhpc-openmpi3 cutensor-12 
+conflict mpi
 
 set CUQUANTUM_ROOT "CUQUANTUMROOT"
-set CUTENSORNET_COMM_LIB "${CUQUANTUM_ROOT}/distributed_interfaces/libcutensornet_distributed_mpi.so"
 
+setenv CUQUANTUM_ROOT "$CUQUANTUM_ROOT"
+setenv CUTENSORNET_COMM_LIB "${CUQUANTUM_ROOT}/distributed_interfaces/libcutensornet_distributed_mpi.so"
 prepend-path LIBRARY_PATH "$CUQUANTUM_ROOT/lib/"
 prepend-path LD_LIBRARY_PATH "$CUQUANTUM_ROOT/lib/"
 prepend-path LD_LIBRARY_PATH "$CUQUANTUM_ROOT/distributed_interfaces/"

@@ -4,8 +4,8 @@ source settings.sh
 
 # version and build from download URL at https://developer.nvidia.com/cutensor-downloads
 CUTENSOR_ARCH=sbsa
-CUTENSOR_VERSION=2.0.2
-CUTENSOR_BUILD=5
+CUTENSOR_VERSION=2.0.1
+CUTENSOR_BUILD=2
 
 module load nvhpc/$NVHPC_VERSION
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
@@ -38,5 +38,5 @@ sed -i "s|CUTENSORROOT|$CUTENSOR_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
 mkdir -p $CUTENSOR_MODULE_PREFIX
 mv "$MODULE_TEMP_PATH" $CUTENSOR_MODULE_PREFIX/$CUTENSOR_VERSION
 
-
+module unload nvhpc/$NVHPC_VERSION
 

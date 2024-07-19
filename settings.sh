@@ -2,7 +2,7 @@ if [ -z ${__PSC_SETTINGS__+x} ]; then # include guard
 __PSC_SETTINGS__=1
 
 # EDIT at each rebuild of the software stack
-DATE_TAG="2024.06.18"
+DATE_TAG="2024.07.19"
 SYSTEM="ella"
 SETUP_PREFIX=$PWD # folder containing settings.sh ./scripts and ./modules
 BUILD_PREFIX=/tmp/$DATE_TAG
@@ -36,6 +36,8 @@ HOST_GCC_AR=$(which gcc-ar)
 HOST_GCC_RANLIB=$(which gcc-ranlib)
 
 NVHPC_VERSION=24.5
+PYTHON_VERSIONS=( 3.10 3.12 )
+PYTHON_DEFAULT_VERSION=3.10
 
 # make directories if they don't exist
 mkdir -p $INSTALL_PREFIX
