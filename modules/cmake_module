@@ -1,0 +1,19 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr "CMake, the cross-platform, open-source build system."
+}
+
+module-whatis "Name: CMake CMAKEVERSION"
+module-whatis "Version: CMAKEVERSION"
+module-whatis "Compiler: COMPILER"
+module-whatis "Path: WHICHCMAKE"
+
+conflict cmake
+
+set cmake_path "CMAKEINSTALLPATH"
+
+prepend-path PATH "$cmake_path/bin"
+prepend-path CMAKE_PREFIX_PATH "$cmake_path"
+prepend-path ACLOCAL_PATH "$cmake_path/share/aclocal"
+prepend-path MANPATH "$cmake_path/share/man"
+prepend-path PYTHONPATH "$cmake_path/lib"

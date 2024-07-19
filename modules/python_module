@@ -1,0 +1,42 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr {The Python programming language.}
+}
+
+module-whatis "Name: Python PYTHONVERSION"
+module-whatis "Version: PYTHONVERSION"
+module-whatis "Compiler: COMPILER"
+module-whatis "Path: WHICHPYTHON"
+
+conflict python
+
+# Set variables
+set user [exec sh -c "echo \$MYSOFTWARE"]
+set python_userbase "$user/software/ella/DATETAG/python-PYTHONVERSION"
+set python_binarypath "PYTHONBINARYPATH"
+set python_librarypath "PYTHONLIBRARYPATH"
+set python_include "PYTHONINCLUDE"
+set python_cmakeprefixpath "PYTHONCMAKEPREFIXPATH"
+set python_manpath "PYTHONMANPATH"
+set python_pkgconfigpath "PYTHONPKGCONFIGPATH"
+
+# Create the PYTHONUSERBASE directory if it does not exist
+if {![file exists $python_userbase]} {
+    catch {exec mkdir -p $python_userbase} result
+    if {![file exists $python_userbase]} {
+        puts stderr "Failed to create the directory: $python_userbase"
+        exit 1
+    }
+}
+
+# Prepend paths
+prepend-path PATH $python_binarypath
+prepend-path LIBRARY_PATH $python_librarypath
+prepend-path LD_LIBRARY_PATH $python_librarypath
+prepend-path CPATH $python_include
+prepend-path CMAKE_PREFIX_PATH $python_cmakeprefixpath
+prepend-path MANPATH $python_manpath
+prepend-path PKG_CONFIG_PATH $python_pkgconfigpath
+setenv PYTHONUSERBASE $python_userbase
+setenv PYTHONUSERSITE $python_userbase
+prepend-path PATH "$python_userbase/bin"

@@ -1,0 +1,14 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr "A small build system with a focus on speed."
+}
+
+module-whatis "Name: Ninja NINJAVERSION"
+module-whatis "Version: NINJAVERSION"
+module-whatis "Path: WHICHNINJA"
+
+conflict ninja
+
+set ninja_path "NINJAINSTALLPATH"
+
+prepend-path PATH "$ninja_path/bin"

@@ -1,0 +1,19 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr {NVIDIA cuTENSOR is a GPU-accelerated tensor linear algebra library for tensor contraction, reduction, and elementwise operations.}
+}
+
+module-whatis "Name: cuTENSOR CUTENSORVERSION"
+module-whatis "CUDA Version: CUDAVERSION"
+
+prereq-any nvhpc nvhpc-byo-compiler nvhpc-hpcx-cuda12 nvhpc-hpcx nvhpc-nompi nvhpc-openmpi3 
+
+set CUTENSOR_ROOT "CUTENSORROOT"
+
+prepend-path LIBRARY_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
+prepend-path LD_LIBRARY_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
+prepend-path CPATH "$CUTENSOR_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
+prepend-path CMAKE_PREFIX_PATH "$CUTENSOR_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
+

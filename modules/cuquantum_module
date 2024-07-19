@@ -1,0 +1,23 @@
+#%Module -*- tcl -*-
+proc ModulesHelp { } {
+    puts stderr {NVIDIA cuQUANTUM is a GPU-accelerated tensor linear algebra library for tensor contraction, reduction, and elementwise operations.}
+}
+
+module-whatis "Name: cuQUANTUM CUQUANTUMVERSION"
+module-whatis "CUDA Version: CUDAVERSION"
+module-whatis "Documentation: https://docs.nvidia.com/cuda/cuquantum/24.03.0/"
+
+prereq mpi/mpich-aarch64
+prereq-any nvhpc nvhpc-byo-compiler nvhpc-hpcx-cuda12 nvhpc-hpcx nvhpc-nompi 
+conflict nvhpc-openmpi3 
+
+set CUQUANTUM_ROOT "CUQUANTUMROOT"
+set CUTENSORNET_COMM_LIB "${CUQUANTUM_ROOT}/distributed_interfaces/libcutensornet_distributed_mpi.so"
+
+prepend-path LIBRARY_PATH "$CUQUANTUM_ROOT/lib/"
+prepend-path LD_LIBRARY_PATH "$CUQUANTUM_ROOT/lib/"
+prepend-path LD_LIBRARY_PATH "$CUQUANTUM_ROOT/distributed_interfaces/"
+prepend-path CPATH "$CUQUANTUM_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_ROOT/lib/"
+prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_ROOT/include/"
+prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_ROOT/lib/"
