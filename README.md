@@ -2,19 +2,19 @@
 
 This setup installs and configures the following tcl modules:
 
-* cmake
-* ninja
-* python
-* cutensor
-* cupy
-* cuquantum
-* cuquantum-python
+* CMake
+* Ninja-build
+* Python
+* cuTENSOR
+* cuPY
+* cuQUANTUM
+* cuQUANTUM-python
 * HIP
 	- hipBLAS
 	- hipSOLVER
 	- hipRAND
 	- hipFORT
-* spack
+* Spack
 
 ## Usage
 
