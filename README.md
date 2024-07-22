@@ -1,7 +1,3 @@
-Sure, here's a revised version of your readme with some adjustments for clarity and consistency:
-
----
-
 # Ella QC Software Stack
 
 This setup installs and configures the following tcl modules:
