@@ -1,0 +1,37 @@
+#%Module1.0
+#
+# HIP module file
+#
+proc ModulesHelp { } {
+    puts stderr "HIP environment for NVHPC"
+}
+
+module-whatis "Name: HIP ROCM_HIP_VERSION"
+module-whatis "Version: ROCM_HIP_VERSION"
+module-whatis "Category: development"
+module-whatis "Description: HIP environment for NVHPC"
+module-whatis "URL: https://rocm.docs.amd.com/en/docs-ROCM_HIP_VERSION"
+
+prereq-any nvhpc nvhpc-openmpi3
+
+set rocm_version "ROCM_HIP_VERSION"
+set rocm_base "ROCM_BASE"
+
+prepend-path LD_LIBRARY_PATH "$rocm_base/lib"
+prepend-path CMAKE_PREFIX_PATH "$rocm_base/lib64/cmake"
+prepend-path PATH "$rocm_base/bin"
+prepend-path CPATH "$rocm_base/include/hip"
+prepend-path CPATH "$rocm_base/include/hipblas"
+prepend-path CPATH "$rocm_base/include/hipsparse"
+prepend-path CPATH "$rocm_base/include/hipsolver"
+prepend-path CPATH "$rocm_base/include/hiprand"
+
+setenv CUDA_PATH NVHPC_CUDA_PATH
+setenv HIP_PLATFORM nvidia
+setenv ROCM_PATH $rocm_base
+setenv HIP_PATH $rocm_base
+setenv HIP_COMPILER HOST_COMPILER
+setenv HIPFORT_COMPILER HOST_Fortran_COMPILER
+
+setenv HIP_VERSION $rocm_version
+
