@@ -1,0 +1,3 @@
+config:
+  source_cache: $MYSOFTWARE/SYSTEM/DATETAG/spack-SPACKVERSION/cache
+  install_tree: $MYSOFTWARE/SYSTEM/DATETAG/spack-SPACKVERSION/opt/spack

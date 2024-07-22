@@ -1,0 +1,6 @@
+modules:
+  default:
+    roots:
+      tcl: $MYSOFTWARE/SYSTEM/DATETAG/spack-SPACKVERSION/modules
+      lmod: $MYSOFTWARE/SYSTEM/DATETAG/spack-SPACKVERSION/lmod
+    enable: [tcl]
