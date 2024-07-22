@@ -10,7 +10,6 @@ This setup installs and configures the following tcl modules:
 * cuquantum
 * cuquantum-python
 * HIP
-	- HIP
 	- hipBLAS
 	- hipSOLVER
 	- hipRAND
