@@ -51,3 +51,4 @@ This setup installs and configures the following tcl modules:
     ```bash
     $MYSOFTWARE/ella/$DATE_TAG/spack-$SPACKVERSION
     ```
+* Spack is configured to generate tcl module files. To use them, add `$MYSOFTWARE/ella/$DATE_TAG/spack-$SPACKVERSION/modules` to your `MODULEPATH`. 
