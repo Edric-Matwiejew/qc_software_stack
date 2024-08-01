@@ -29,12 +29,12 @@ This setup installs and configures the following tcl modules:
 
 Configure the environment variables:
 
-    ```bash
-    export DATE_TAG=<date_tag>
-    export PAWSEY_PROJECT=<my_project>
-    export MYSOFTWARE=/pawsey/software/projects/<my_project>/$USER
-    export MODULEPATH=/opt/nvidia/hpc_sdk/modulefiles:$MYSOFTWARE/../modules/$DATE_TAG:$MODULEPATH
-    ```
+```bash
+export DATE_TAG=<date_tag>
+export PAWSEY_PROJECT=<my_project>
+export MYSOFTWARE=/pawsey/software/projects/<my_project>/$USER
+export MODULEPATH=/opt/nvidia/hpc_sdk/modulefiles:$MYSOFTWARE/../modules/$DATE_TAG:$MODULEPATH
+```
 
 ## Notes
 
