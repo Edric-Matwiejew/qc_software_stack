@@ -16,7 +16,7 @@ This setup installs and configures the following tcl modules:
 	- hipFORT
 * Spack
 
-## Usage
+## Installation
 
 1. Edit the `DATE_TAG` variable in `settings.sh`.
 2. From the project root directory, run the following command:
@@ -25,7 +25,9 @@ This setup installs and configures the following tcl modules:
     bash scripts/install_software_stack.sh
     ```
 
-3. Configure the environment variables:
+## Usage
+
+Configure the environment variables:
 
     ```bash
     export DATE_TAG=<date_tag>
