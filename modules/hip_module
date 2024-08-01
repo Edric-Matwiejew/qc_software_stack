@@ -1,37 +1,34 @@
-#%Module1.0
-#
-# HIP module file
-#
-proc ModulesHelp { } {
-    puts stderr "HIP environment for NVHPC"
-}
+-- -*- lua -*-
+help([[
+HIP environment for NVHPC
+]])
 
-module-whatis "Name: HIP ROCM_HIP_VERSION"
-module-whatis "Version: ROCM_HIP_VERSION"
-module-whatis "Category: development"
-module-whatis "Description: HIP environment for NVHPC"
-module-whatis "URL: https://rocm.docs.amd.com/en/docs-ROCM_HIP_VERSION"
+whatis("Name: HIP ROCM_HIP_VERSION")
+whatis("Version: ROCM_HIP_VERSION")
+whatis("Category: development")
+whatis("Description: HIP environment for NVHPC")
+whatis("URL: https://rocm.docs.amd.com/en/docs-ROCM_HIP_VERSION")
 
-prereq-any nvhpc nvhpc-openmpi3
+prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
 
-set rocm_version "ROCM_HIP_VERSION"
-set rocm_base "ROCM_BASE"
+local rocm_version = "ROCM_HIP_VERSION"
+local rocm_base = "ROCM_BASE"
 
-prepend-path LD_LIBRARY_PATH "$rocm_base/lib"
-prepend-path CMAKE_PREFIX_PATH "$rocm_base/lib64/cmake"
-prepend-path PATH "$rocm_base/bin"
-prepend-path CPATH "$rocm_base/include/hip"
-prepend-path CPATH "$rocm_base/include/hipblas"
-prepend-path CPATH "$rocm_base/include/hipsparse"
-prepend-path CPATH "$rocm_base/include/hipsolver"
-prepend-path CPATH "$rocm_base/include/hiprand"
+prepend_path("LD_LIBRARY_PATH", pathJoin(rocm_base, "lib"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(rocm_base, "lib64/cmake"))
+prepend_path("PATH", pathJoin(rocm_base, "bin"))
+prepend_path("CPATH", pathJoin(rocm_base, "include/hip"))
+prepend_path("CPATH", pathJoin(rocm_base, "include/hipblas"))
+prepend_path("CPATH", pathJoin(rocm_base, "include/hipsparse"))
+prepend_path("CPATH", pathJoin(rocm_base, "include/hipsolver"))
+prepend_path("CPATH", pathJoin(rocm_base, "include/hiprand"))
 
-setenv CUDA_PATH NVHPC_CUDA_PATH
-setenv HIP_PLATFORM nvidia
-setenv ROCM_PATH $rocm_base
-setenv HIP_PATH $rocm_base
-setenv HIP_COMPILER HOST_COMPILER
-setenv HIPFORT_COMPILER HOST_Fortran_COMPILER
+setenv("CUDA_PATH", "NVHPC_CUDA_PATH")
+setenv("HIP_PLATFORM", "nvidia")
+setenv("ROCM_PATH", rocm_base)
+setenv("HIP_PATH", rocm_base)
+setenv("HIP_COMPILER", "HOST_COMPILER")
+setenv("HIPFORT_COMPILER", "HOST_Fortran_COMPILER")
 
-setenv HIP_VERSION $rocm_version
+setenv("HIP_VERSION", rocm_version)
 

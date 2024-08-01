@@ -10,6 +10,7 @@ CUTENSOR_VERSION=2.0.1
 PYTHON_C_COMPILER=$HOST_CC
 PYTHON_CXX_COMPILER=$HOST_CXX
 
+module load nvhpc
 module load cutensor-12/$CUTENSOR_VERSION
 
 CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1] "." a[2]}')
@@ -55,12 +56,13 @@ do
 	cd cupy
 	PYTHONUSERBASE="$CUPY_INSTALL_PREFIX" python3 -m pip install -v --user .
 	
-	cd $INSTALL_PREFIX
+	cd $BUILD_PREFIX
 	
-	MODULE_TEMP_PATH=$BUILD_PREFIX/$CUPY_VERSION
+	MODULE_TEMP_PATH="$BUILD_PREFIX/$CUPY_VERSION.lua"
 	cp $SETUP_PREFIX/modules/cupy_module $MODULE_TEMP_PATH
 	sed -i "s|CUPYVERSION|$CUPY_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUDAVERSION|$CUDA_MAJOR_MINOR_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUPYROOT|$CUPY_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
 	sed -i "s|PYTHONVERSION|$PYTHON_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUDAPATH|$CUDA_PATH|g" "$MODULE_TEMP_PATH"
@@ -73,3 +75,4 @@ do
 done
 
 module unload cutensor-12/$CUTENSOR_VERSION
+module unload nvhpc

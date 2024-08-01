@@ -1,23 +1,25 @@
-#%Module -*- tcl -*-
-proc ModulesHelp { } {
-    puts stderr {NVIDIA cuQUANTUM is a GPU-accelerated tensor linear algebra library for tensor contraction, reduction, and elementwise operations.}
-}
+-- -*- lua -*-
+help([[
+NVIDIA cuQUANTUM is a GPU-accelerated tensor linear algebra library for tensor contraction, reduction, and elementwise operations.
+]])
 
-module-whatis "Name: cuQUANTUM CUQUANTUMVERSION"
-module-whatis "CUDA Version: CUDAVERSION"
-module-whatis "Documentation: https://docs.nvidia.com/cuda/cuquantum/24.03.0/"
+whatis("Name: cuQUANTUM CUQUANTUMVERSION")
+whatis("CUDA Version: CUDAVERSION")
+whatis("Documentation: https://docs.nvidia.com/cuda/cuquantum/24.03.0/")
 
-prereq-all nvhpc-openmpi3 cutensor-12 
-conflict mpi
+prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
+load("cutensor-12")
+conflict("mpi")
 
-set CUQUANTUM_ROOT "CUQUANTUMROOT"
+local CUQUANTUM_ROOT = "CUQUANTUMROOT"
 
-setenv CUQUANTUM_ROOT "$CUQUANTUM_ROOT"
-setenv CUTENSORNET_COMM_LIB "${CUQUANTUM_ROOT}/distributed_interfaces/libcutensornet_distributed_mpi.so"
-prepend-path LIBRARY_PATH "$CUQUANTUM_ROOT/lib/"
-prepend-path LD_LIBRARY_PATH "$CUQUANTUM_ROOT/lib/"
-prepend-path LD_LIBRARY_PATH "$CUQUANTUM_ROOT/distributed_interfaces/"
-prepend-path CPATH "$CUQUANTUM_ROOT/include/"
-prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_ROOT/lib/"
-prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_ROOT/include/"
-prepend-path CMAKE_PREFIX_PATH "$CUQUANTUM_ROOT/lib/"
+setenv("CUQUANTUM_ROOT", CUQUANTUM_ROOT)
+setenv("CUTENSORNET_COMM_LIB", pathJoin(CUQUANTUM_ROOT, "distributed_interfaces/libcutensornet_distributed_mpi.so"))
+prepend_path("LIBRARY_PATH", pathJoin(CUQUANTUM_ROOT, "lib/"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(CUQUANTUM_ROOT, "lib/"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(CUQUANTUM_ROOT, "distributed_interfaces/"))
+prepend_path("CPATH", pathJoin(CUQUANTUM_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(CUQUANTUM_ROOT, "lib/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(CUQUANTUM_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(CUQUANTUM_ROOT, "lib/"))
+
