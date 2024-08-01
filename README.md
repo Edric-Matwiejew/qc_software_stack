@@ -36,7 +36,7 @@ Configure the environment variables:
 ```bash
 export DATE_TAG=<date_tag>
 export PAWSEY_PROJECT=<my_project>
-export MYSOFTWARE=/pawsey/software/projects/<my_project>/$USER
+export MYSOFTWARE=/pawsey/software/projects/<my_project>/<my_folder>
 export MODULEPATH=/opt/nvidia/hpc_sdk/modulefiles:$MYSOFTWARE/../modules/$DATE_TAG:$MODULEPATH
 ```
 
