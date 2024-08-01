@@ -19,7 +19,11 @@ This setup installs and configures the following tcl modules:
 ## Installation
 
 1. Edit the `DATE_TAG` variable in `settings.sh`.
-2. From the project root directory, run the following command:
+2. Setup `$MODULEPATH`:
+    ```bash
+    export MODULEPATH=/opt/nvidia/hpc_sdk/modulefiles:$MYSOFTWARE/../modules/$DATE_TAG:$MODULEPATH
+    ```
+3. From the project root directory, run the following command:
 
     ```bash
     bash scripts/install_software_stack.sh
