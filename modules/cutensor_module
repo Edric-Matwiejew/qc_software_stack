@@ -1,20 +1,20 @@
-#%Module -*- tcl -*-
-proc ModulesHelp { } {
-    puts stderr {NVIDIA cuTENSOR is a GPU-accelerated tensor linear algebra library for tensor contraction, reduction, and elementwise operations.}
-}
+-- -*- lua -*-
+help([[
+NVIDIA cuTENSOR is a GPU-accelerated tensor linear algebra library for tensor contraction, reduction, and elementwise operations.
+]])
 
-module-whatis "Name: cuTENSOR CUTENSORVERSION"
-module-whatis "CUDA Version: CUDAVERSION"
+whatis("Name: cuTENSOR CUTENSORVERSION")
+whatis("CUDA Version: CUDAVERSION")
 
-prereq-any nvhpc nvhpc-openmpi3
+prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
 
-set CUTENSOR_ROOT "CUTENSORROOT"
+local CUTENSOR_ROOT = "CUTENSORROOT"
 
-setenv CUTENSOR_ROOT "$CUTENSOR_ROOT"
-prepend-path LIBRARY_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
-prepend-path LD_LIBRARY_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
-prepend-path CPATH "$CUTENSOR_ROOT/include/"
-prepend-path CMAKE_PREFIX_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
-prepend-path CMAKE_PREFIX_PATH "$CUTENSOR_ROOT/include/"
-prepend-path CMAKE_PREFIX_PATH "$CUTENSOR_ROOT/lib/CUDAVERSION/"
+setenv("CUTENSOR_ROOT", CUTENSOR_ROOT)
+prepend_path("LIBRARY_PATH", pathJoin(CUTENSOR_ROOT, "lib/CUDAVERSION/"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(CUTENSOR_ROOT, "lib/CUDAVERSION/"))
+prepend_path("CPATH", pathJoin(CUTENSOR_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(CUTENSOR_ROOT, "lib/CUDAVERSION/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(CUTENSOR_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(CUTENSOR_ROOT, "lib/CUDAVERSION/"))
 

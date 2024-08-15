@@ -1,46 +1,36 @@
-#%Module -*- tcl -*-
-proc ModulesHelp { } {
-    puts stderr "Spack is a package management tool designed to support multiple versions and configurations of software on a wide variety of platforms and environments."
-}
-module-whatis "Name: Spack"
-module-whatis "Version: SPACKVERSION"
-module-whatis "Path: SPACKINSTALLPATH/bin/spack"
+-- -*- lua -*-
+help([[
+Spack is a package management tool designed to support multiple versions and configurations of software on a wide variety of platforms and environments.
+]])
 
-prereq python/SPACKPYTHONVERSION
+whatis("Name: Spack")
+whatis("Version: SPACKVERSION")
+whatis("Path: SPACKINSTALLPATH/bin/spack")
 
-set USER [getenv USER]
-set MYSOFTWARE [getenv MYSOFTWARE]
+prereq("python/SPACKPYTHONVERSION")
 
-set spack_path "SPACKINSTALLPATH"
-set SPACK_USER_CONFIG_PATH "USERSPACKPATH"
+local USER = os.getenv("USER")
+local MYSOFTWARE = os.getenv("MYSOFTWARE")
 
-#setenv SPACK_PYTHON "SPACKPYTHON"
-setenv SPACK_USER_CONFIG_PATH "USERSPACKPATH"
-setenv SPACK_USER_CACHE_PATH "USERSPACKPATH"
-setenv TMPDIR "/tmp/$USER"
+local spack_path = "SPACKINSTALLPATH"
+local SPACK_USER_CONFIG_PATH = "USERSPACKPATH"
 
-if {![file exists $SPACK_USER_CONFIG_PATH]} {
-    catch {exec mkdir -p $SPACK_USER_CONFIG_PATH} result
-    if {![file exists $SPACK_USER_CONFIG_PATH]} {
-        puts stderr "Failed to create the directory: $SPACK_USER_CONFIG_PATH"
-        exit 1
-    }
-}
+-- setenv("SPACK_PYTHON", "SPACKPYTHON")
+setenv("SPACK_USER_CONFIG_PATH", SPACK_USER_CONFIG_PATH)
+setenv("SPACK_USER_CACHE_PATH", SPACK_USER_CONFIG_PATH)
+setenv("TMPDIR", pathJoin("/tmp", USER))
 
-if {![file exists $SPACK_USER_CONFIG_PATH/opt/spack]} {
-    catch {exec mkdir -p $SPACK_USER_CONFIG_PATH/opt/spack} result
-    if {![file exists $SPACK_USER_CONFIG_PATH/opt/spack]} {
-        puts stderr "Failed to create the directory: $SPACK_USER_CONFIG_PATH/opt/spack"
-        exit 1
-    }
-}
+local function create_directory(path)
+    if not isDir(path) then
+        local success = os.execute("mkdir -p " .. path)
+        if not success then
+            LmodError("Failed to create the directory: " .. path)
+        end
+    end
+end
 
-if {![file exists $SPACK_USER_CONFIG_PATH/modules]} {
-    catch {exec mkdir -p $SPACK_USER_CONFIG_PATH/modules} result
-    if {![file exists $SPACK_USER_CONFIG_PATH/modules]} {
-        puts stderr "Failed to create the directory: $SPACK_USER_CONFIG_PATH/modules"
-        exit 1
-    }
-}
+create_directory(SPACK_USER_CONFIG_PATH)
+create_directory(pathJoin(SPACK_USER_CONFIG_PATH, "opt/spack"))
+create_directory(pathJoin(SPACK_USER_CONFIG_PATH, "modules"))
 
-source-sh bash "SPACKINSTALLPATH/share/spack/setup-env.sh"
+execute {cmd="source " .. spack_path .. "/share/spack/setup-env.sh", modeA={"load"}}

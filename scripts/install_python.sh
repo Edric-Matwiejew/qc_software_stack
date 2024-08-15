@@ -5,6 +5,7 @@ source settings.sh
 SETUPTOOLS_VERSION=71.0.0
 PIP_VERSION=24.1.2
 LIBFFI_VERSION=3.4.6 # required for the Python ctypes module
+SQLITE_VERSION=3.46.1
 
 export CC=$HOST_CC
 export CXX=$HOST_CXX
@@ -32,8 +33,17 @@ do
 	make -j4 all
 	make install
 	cd $BUILD_PREFIX
+
+	wget https://github.com/sqlite/sqlite/archive/refs/tags/version-$SQLITE_VERSION.tar.gz
+	tar -xvf version-*.tar.gz
+	cd sqlite-version*
+	./configure --prefix=$PYTHON_INSTALL_PREFIX
+	make
+	make sqlite3.c
+	make install
+	cd $BUILD_PREFIX
 	
-	git clone --branch $PYTHON_VERSION https://github.com/python/cpython.git
+	git clone --branch $PYTHON_VERSION --depth=1 https://github.com/python/cpython.git
 	
 	cd cpython
 	
@@ -43,7 +53,8 @@ do
 	--enable-profiling=no \
 	--enable-optimizations=yes \
 	--with-pydebug=yes \
-	--with-ensurepip=install 
+	--with-ensurepip=install \
+	--enable-loadable-sqlite-extensions=yes
 	#--with-valgrind=yes
 	
 	make -j4 all
@@ -52,7 +63,7 @@ do
 	ln $PYTHON_INSTALL_PREFIX/bin/python$PYTHON_VERSION $PYTHON_INSTALL_PREFIX/bin/python
 
 	cd $BUILD_PREFIX
-	rm -rf cpython liffi*
+	rm -rf cpython liffi* version* sqlite-version*
 
 	MODULE_TEMP_PATH=$MODULE_TEMP_PREFIX/$PYTHON_VERSION
 	cp $SETUP_PREFIX/modules/python_module "$MODULE_TEMP_PATH"

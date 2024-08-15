@@ -2,7 +2,7 @@ if [ -z ${__PSC_SETTINGS__+x} ]; then # include guard
 __PSC_SETTINGS__=1
 
 # EDIT at each rebuild of the software stack
-DATE_TAG="2024.07.19"
+DATE_TAG="2024.08.16"
 SYSTEM="ella"
 SETUP_PREFIX=$PWD # folder containing settings.sh ./scripts and ./modules
 BUILD_PREFIX=/tmp/$DATE_TAG
@@ -35,7 +35,7 @@ HOST_FC=$(which gfortran)
 HOST_GCC_AR=$(which gcc-ar)
 HOST_GCC_RANLIB=$(which gcc-ranlib)
 
-NVHPC_VERSION=24.5
+NVHPC_VERSION=24.7
 PYTHON_VERSIONS=( 3.10 3.12 )
 PYTHON_DEFAULT_VERSION=3.10
 
@@ -44,6 +44,6 @@ mkdir -p $INSTALL_PREFIX
 mkdir -p $MODULE_PREFIX
 mkdir -p $BUILD_PREFIX/modules
 
-module use $MODULE_PREFIX
+#module use $MODULE_PREFIX
 
 fi # close include guard

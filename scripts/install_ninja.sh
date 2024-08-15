@@ -11,10 +11,10 @@ mkdir -p $NINJA_INSTALL_PREFIX/bin
 
 cd $BUILD_PREFIX
 
-#wget https://github.com/ninja-build/ninja/releases/download/v$NINJA_VERSION/ninja-linux-aarch64.zip
-#unzip ninja-linux-aarch64.zip -d $NINJA_INSTALL_PREFIX
-#
-#rm -rf ninja*
+wget https://github.com/ninja-build/ninja/releases/download/v$NINJA_VERSION/ninja-linux-aarch64.zip
+unzip ninja-linux-aarch64.zip -d $NINJA_INSTALL_PREFIX
+
+rm -rf ninja*
 
 wget https://github.com/ninja-build/ninja/archive/refs/tags/v$NINJA_VERSION.tar.gz
 tar -xzvf v$NINJA_VERSION.tar.gz && cd ninja-$NINJA_VERSION
