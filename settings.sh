@@ -35,7 +35,7 @@ HOST_FC=$(which gfortran)
 HOST_GCC_AR=$(which gcc-ar)
 HOST_GCC_RANLIB=$(which gcc-ranlib)
 
-NVHPC_VERSION=24.5
+NVHPC_VERSION=24.7
 PYTHON_VERSIONS=( 3.10 3.12 )
 PYTHON_DEFAULT_VERSION=3.10
 
