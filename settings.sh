@@ -2,7 +2,7 @@ if [ -z ${__PSC_SETTINGS__+x} ]; then # include guard
 __PSC_SETTINGS__=1
 
 # EDIT at each rebuild of the software stack
-DATE_TAG="2024.08.16"
+DATE_TAG="2024.08.01"
 SYSTEM="ella"
 SETUP_PREFIX=$PWD # folder containing settings.sh ./scripts and ./modules
 BUILD_PREFIX=/tmp/$DATE_TAG
