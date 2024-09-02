@@ -10,7 +10,7 @@ CUTENSOR_VERSION=2.0.1
 PYTHON_C_COMPILER=$HOST_CC
 PYTHON_CXX_COMPILER=$HOST_CXX
 
-module load nvhpc
+module load nvhpc/$NVHPC_VERSION
 module load cutensor-12/$CUTENSOR_VERSION
 
 CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1] "." a[2]}')
@@ -18,15 +18,15 @@ CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" |
 # Specify the version of nvcc that comes with nvhpc
 NVCC=$(which nvcc)
 
-CUDA_PATH=$NVHPC_ROOT/cuda
+export CUDA_PATH=$NVHPC_ROOT/cuda
 
 # Need to specify the include and library paths explicitly
-CFLAGS="-I$NVHPC_ROOT/cuda/include \
+export CFLAGS="-I$NVHPC_ROOT/cuda/include \
                -I$NVHPC_ROOT/math_libs/include \
                -I$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION/targets/x86_64-linux/include \
 	       -I$CUTENSOR_ROOT/include"
 
-LDFLAGS="-L$NVHPC_ROOT/cuda/lib64 \
+export LDFLAGS="-L$NVHPC_ROOT/cuda/lib64 \
                 -L$NVHPC_ROOT/math_libs/lib64 \
                 -L$NVHPC_ROOT/REDIST/comm_libs/$CUDA_MAJOR_MINOR_VERSION/nccl/lib \
                 -L$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION/targets/x86_64-linux/lib/stubs \
@@ -48,6 +48,7 @@ do
 	# Install CuPy
 	mkdir -p $CUPY_INSTALL_PREFIX
 	
+	rm -rf cupy
 	git clone --branch=$CUPY_GIT_TAG --recursive https://github.com/cupy/cupy
 	
 	# only way to exclude the system install of cudnn!?
@@ -65,13 +66,13 @@ do
 	sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUPYROOT|$CUPY_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
 	sed -i "s|PYTHONVERSION|$PYTHON_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|PYTHONVERSION_MAJOR_MINOR|${PYTHON_VERSION:0:4}|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUDAPATH|$CUDA_PATH|g" "$MODULE_TEMP_PATH"
 	mkdir -p $CUPY_MODULE_PREFIX
 	mv $MODULE_TEMP_PATH $CUPY_MODULE_PREFIX/.
 	
 	module unload python/$PYTHON_VERSION
 
-	rm -rf cupy
 done
 
 module unload cutensor-12/$CUTENSOR_VERSION

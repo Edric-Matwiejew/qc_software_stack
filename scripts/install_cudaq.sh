@@ -3,17 +3,6 @@
 source settings.sh
 
 
-#BUILD_PREFIX=test
-#mkdir -p $BUILD_PREFIX
-
-#module use /opt/nvidia/hpc_sdk/modulefiles
-
-#python -m pip install cmake --user
-
-# install script based on:
-# https://nvidia.github.io/cuda-quantum/latest/using/install/data_center_install.html
-
-PYTHON_VERSION=3.10
 #version from link given at https://developer.nvidia.com/cutensor-downloads
 CUTENSOR_VERSION=2.0.2.5
 

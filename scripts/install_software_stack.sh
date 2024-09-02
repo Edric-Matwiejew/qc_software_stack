@@ -19,4 +19,6 @@ bash scripts/install_spack.sh
 
 #bash scripts/install_cudaq.sh
 
+chmod -R 555 $INSTALL_PREFIX
+
 rm -rf $BUILD_PREFIX

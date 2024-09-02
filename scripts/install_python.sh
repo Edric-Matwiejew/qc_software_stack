@@ -43,7 +43,7 @@ do
 	make install
 	cd $BUILD_PREFIX
 	
-	git clone --branch $PYTHON_VERSION --depth=1 https://github.com/python/cpython.git
+	git clone --branch v$PYTHON_VERSION --depth=1 https://github.com/python/cpython.git
 	
 	cd cpython
 	
@@ -60,7 +60,7 @@ do
 	make -j4 all
 	make install
 	
-	ln $PYTHON_INSTALL_PREFIX/bin/python$PYTHON_VERSION $PYTHON_INSTALL_PREFIX/bin/python
+	ln $PYTHON_INSTALL_PREFIX/bin/python${PYTHON_VERSION:0:4} $PYTHON_INSTALL_PREFIX/bin/python
 
 	cd $BUILD_PREFIX
 	rm -rf cpython liffi* version* sqlite-version*
@@ -78,14 +78,15 @@ do
 	sed -i "s|PYTHONPKGCONFIGPATH|$PYTHON_INSTALL_PREFIX/lib/pkgconfig|g" "$MODULE_TEMP_PATH"
 	sed -i "s|DATETAG|$DATE_TAG|g" "$MODULE_TEMP_PATH"
 
-	# ensure that python uses its own pip module and not the version in $HOME/.local
-	module load $MODULE_TEMP_PATH
+	mv $MODULE_TEMP_PATH $MODULE_PREFIX/python/$PYTHON_VERSION
+
+	module load python/$PYTHON_VERSION
+
 	python3 -m ensurepip
 	python3 -m pip install --upgrade pip==$PIP_VERSION
 	python3 -m pip install --upgrade setuptools==$SETUPTOOLS_VERSION
-	module unload $MODULE_TEMP_PATH
 
-	mv $MODULE_TEMP_PATH $MODULE_PREFIX/python/$PYTHON_VERSION
+	module unload python/$PYTHON_VERSION
 done
 
 # set the default python module
