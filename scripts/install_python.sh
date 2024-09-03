@@ -54,8 +54,6 @@ do
 	--enable-optimizations=yes \
 	--with-ensurepip=install \
 	--enable-loadable-sqlite-extensions=yes
-	#--with-pydebug=yes \
-	#--with-valgrind=yes
 	
 	make -j4 all
 	make install
