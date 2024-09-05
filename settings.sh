@@ -2,7 +2,7 @@ if [ -z ${__PSC_SETTINGS__+x} ]; then # include guard
 __PSC_SETTINGS__=1
 
 # EDIT at each rebuild of the software stack
-DATE_TAG="2024.09.03"
+DATE_TAG="2024.09.05"
 SYSTEM="ella"
 SETUP_PREFIX=$PWD # folder containing settings.sh ./scripts and ./modules
 BUILD_PREFIX=/tmp/$DATE_TAG
@@ -35,7 +35,8 @@ HOST_FC=$(which gfortran)
 HOST_GCC_AR=$(which gcc-ar)
 HOST_GCC_RANLIB=$(which gcc-ranlib)
 
-NVHPC_VERSION=24.7
+GCC_VERSION=13.3.0
+NVHPC_VERSION=24.5
 PYTHON_VERSIONS=( 3.10.14 3.12.4 )
 PYTHON_DEFAULT_VERSION=3.10.14
 
