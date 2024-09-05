@@ -1,0 +1,42 @@
+source settings.sh
+
+AUTOMAKE_VERSION=1.17
+LIBTOOL_VERSION=2.4.7
+
+module load gcc
+module load autoconf
+
+AUTOMAKE_BUILD_PREFIX=$BUILD_PREFIX/automake-$AUTOMAKE_VERSION
+mkdir -p $AUTOMAKE_BUILD_PREFIX
+
+AUTOMAKE_INSTALL_PREFIX=$INSTALL_PREFIX/automake-$AUTOMAKE_VERSION
+mkdir -p $AUTOMAKE_INSTALL_PREFIX
+
+AUTOMAKE_MODULE_PREFIX=$MODULE_PREFIX/automake
+mkdir -p $AUTOMAKE_MODULE_PREFIX
+
+cd $AUTOMAKE_BUILD_PREFIX
+
+wget https://mirrors.middlendian.com/gnu/automake/automake-$AUTOMAKE_VERSION.tar.xz
+tar -xvf automake-$AUTOMAKE_VERSION.tar.xz
+cd automake-$AUTOMAKE_VERSION
+./configure --prefix=$AUTOMAKE_INSTALL_PREFIX
+make -j64
+make install
+
+cd $AUTOMAKE_INSTALL_PREFIX && rm -rf automake-$AUTOMAKE_VERSION*
+
+wget https://ftpmirror.gnu.org/libtool/libtool-$LIBTOOL_VERSION.tar.gz
+tar -xvf libtool-$LIBTOOL_VERSION.tar.gz
+cd libtool-$LIBTOOL_VERSION
+./configure --prefix=$AUTOMAKE_INSTALL_PREFIX
+make -j64
+make install
+
+cd $AUTOMAKE_INSTALL_PREFIX && rm -rf libtool-$LIBTOOL_VERSION*
+
+MODULE_TEMP_PATH=$MODULE_TEMP_PREFIX/$AUTOMAKE_VERSION
+cp $SETUP_PREFIX/modules/automake_module "$MODULE_TEMP_PATH"
+sed -i "s|AUTOMAKEVERSION|$AUTOMAKE_VERSION|g" "$MODULE_TEMP_PATH"
+sed -i "s|AUTOMAKEROOT|$AUTOMAKE_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
+mv "$MODULE_TEMP_PATH" "$AUTOMAKE_MODULE_PREFIX/$AUTOMAKE_VERSION.lua"

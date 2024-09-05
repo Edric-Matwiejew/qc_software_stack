@@ -7,8 +7,10 @@ PIP_VERSION=24.1.2
 LIBFFI_VERSION=3.4.6 # required for the Python ctypes module
 SQLITE_VERSION=3.46.1
 
-export CC=$HOST_CC
-export CXX=$HOST_CXX
+module load gcc
+
+export CC=$(which gcc)
+export CXX=$(which g++)
 
 mkdir -p $MODULE_PREFIX/python
 
@@ -30,7 +32,7 @@ do
 	tar -xvf libffi-$LIBFFI_VERSION.tar.gz
 	cd libffi-$LIBFFI_VERSION
 	./configure --prefix=$PYTHON_INSTALL_PREFIX --enable-debug --disable-docs
-	make -j4 all
+	make -j64 all
 	make install
 	cd $BUILD_PREFIX
 
@@ -38,7 +40,7 @@ do
 	tar -xvf version-*.tar.gz
 	cd sqlite-version*
 	./configure --prefix=$PYTHON_INSTALL_PREFIX
-	make
+	make -j64
 	make sqlite3.c
 	make install
 	cd $BUILD_PREFIX
@@ -55,7 +57,7 @@ do
 	--with-ensurepip=install \
 	--enable-loadable-sqlite-extensions=yes
 	
-	make -j4 all
+	make -j64 all
 	make install
 	
 	ln $PYTHON_INSTALL_PREFIX/bin/python${PYTHON_VERSION:0:4} $PYTHON_INSTALL_PREFIX/bin/python

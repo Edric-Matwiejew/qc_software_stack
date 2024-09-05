@@ -22,6 +22,7 @@ find "$SPACK_INSTALL_PREFIX/etc/spack" -type f -name "*.yaml" -exec sed -i "s/DA
 find "$SPACK_INSTALL_PREFIX/etc/spack" -type f -name "*.yaml" -exec sed -i "s/SYSTEM/$SYSTEM/g" {} +
 find "$SPACK_INSTALL_PREFIX/etc/spack" -type f -name "*.yaml" -exec sed -i "s/SPACKVERSION/$SPACK_VERSION/g" {} +
 
+module load gcc
 module load python/$SPACK_PYTHON_VERSION
 SPACK_PYTHON=$(which python3)
 

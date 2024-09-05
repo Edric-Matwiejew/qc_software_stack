@@ -6,6 +6,7 @@ QISKIT_AER_VERSION=0.15
 CUPY_VERSION=13.2.0
 CUQUANTUM_VERSION=24.03.0
 
+module load gcc
 module load cmake
 module load ninja
 module load nvhpc/$NVHPC_VERSION
@@ -14,8 +15,8 @@ module load cuquantum/$CUQUANTUM_VERSION
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
 
 CUDA_PATH=$NVHPC_ROOT/cuda
-CC=$HOST_CC
-CXX=$HOST_CXX
+CC=$(which gcc)
+CXX=$(which g++)
 
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"
 do

@@ -4,13 +4,14 @@ CMAKE_VERSIONS=( 3.22.1 )
 
 cd $BUILD_PREFIX
 
+module load gcc
 module load python
 
 mkdir -p $MODULE_PREFIX/cmake
 
-export CC=$HOST_CC
-export CXX=$HOST_CXX
-export FC=$HOST_FC
+export CC=$(which gcc)
+export CXX=$(which g++)
+export FC=$(which gfortran)
 
 for CMAKE_VERSION in "${CMAKE_VERSIONS[@]}"
 do
@@ -18,12 +19,12 @@ do
 	CMAKE_INSTALL_PREFIX=$INSTALL_PREFIX/cmake-$CMAKE_VERSION
 	mkdir -p $CMAKE_INSTALL_PREFIX
 
-	git clone --branch v$CMAKE_VERSION https://github.com/Kitware/CMake
+	git clone --depth 1 --branch v$CMAKE_VERSION https://github.com/Kitware/CMake
 
 	cd CMake
 
 	./bootstrap --prefix=$CMAKE_INSTALL_PREFIX
-	make -j4
+	make -j64
 	make install
 	cd $BUILD_PREFIX ; rm -rf cmake
 

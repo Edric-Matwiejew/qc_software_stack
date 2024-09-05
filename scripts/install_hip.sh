@@ -9,15 +9,16 @@ NVHPC_VERSION=24.5
 HIP_INSTALL_PREFIX="$INSTALL_PREFIX/hip-${ROCM_FULL_VERSION}"
 HIP_BUILD_PREFIX="$BUILD_PREFIX/hip"
 
+module load gcc
 module load nvhpc/$NVHPC_VERSION
 module load cmake
 
 ROCM_BRANCH=rocm-${ROCM_VERSION}.x
 
 # C and C++ compilers associated with the NVHPC default toolchain
-export CC=$HOST_CC
-export CXX=$HOST_CXX
-export FC=$HOST_FC
+export CC=$(which gcc)
+export CXX=$(which g++)
+export FC=$(which gfortran)
 
 export CUDA_PATH=$NVHPC_ROOT/cuda
 

@@ -6,9 +6,11 @@ CUPY_VERSION=13.2.0
 CUPY_GIT_TAG=v13
 CUTENSOR_VERSION=2.0.1
 
+module load gcc
+
 # Build against the toolchain used to build Python
-PYTHON_C_COMPILER=$HOST_CC
-PYTHON_CXX_COMPILER=$HOST_CXX
+PYTHON_C_COMPILER=$(which gcc)
+PYTHON_CXX_COMPILER=$(which g++)
 
 module load nvhpc/$NVHPC_VERSION
 module load cutensor-12/$CUTENSOR_VERSION

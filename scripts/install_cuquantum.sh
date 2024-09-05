@@ -7,6 +7,7 @@ CUTENSOR_VERSION=2.0.1
 CUQUANTUM_BUILD_NUMBER=4
 NVHPC_OPENMPI_VERSION=3.1.5
 
+module load gcc
 module load nvhpc-openmpi3/$NVHPC_VERSION
 module load cutensor-12/$CUTENSOR_VERSION
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
@@ -25,7 +26,7 @@ tar -xvf $CUQUANTUM_ARCHIVE.tar.xz
 # MPI activation, requires GPU aware MPI
 MPI_PATH=$NVHPC_ROOT/comm_libs/openmpi/openmpi-$NVHPC_OPENMPI_VERSION
 cd $CUQUANTUM_ARCHIVE/distributed_interfaces
-$HOST_CC -shared -std=c99 -fPIC \
+$(which gcc) -shared -std=c99 -fPIC \
 	-I${NVHPC_ROOT}/cuda/include -I../include -I${MPI_PATH}/include \
  	 cutensornet_distributed_interface_mpi.c \
   	-L${MPI_PATH}/lib -lmpi \

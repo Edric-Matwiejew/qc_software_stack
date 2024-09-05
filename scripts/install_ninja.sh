@@ -1,10 +1,14 @@
 source settings.sh
 
+module load gcc
 module load cmake
 
 NINJA_VERSION=1.11.1
 
 NINJA_INSTALL_PREFIX=$INSTALL_PREFIX/ninja-$NINJA_VERSION
+
+export CC=$(which gcc)
+export CXX=$(which g++)
 
 mkdir -p $MODULE_PREFIX/ninja
 mkdir -p $NINJA_INSTALL_PREFIX/bin
