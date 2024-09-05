@@ -8,6 +8,7 @@ module-whatis "Version: CMAKEVERSION"
 module-whatis "Compiler: COMPILER"
 module-whatis "Path: WHICHCMAKE"
 
+prereq gcc
 conflict cmake
 
 set cmake_path "CMAKEINSTALLPATH"

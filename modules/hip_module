@@ -9,6 +9,7 @@ whatis("Category: development")
 whatis("Description: HIP environment for NVHPC")
 whatis("URL: https://rocm.docs.amd.com/en/docs-ROCM_HIP_VERSION")
 
+prereq("gcc")
 prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
 
 local rocm_version = "ROCM_HIP_VERSION"

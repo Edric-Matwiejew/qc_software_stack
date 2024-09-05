@@ -1,0 +1,17 @@
+-- -*- lua -*-
+help([[
+Autoconf is an extensible package of M4 macros that produce shell scripts to automatically configure software source code packages.
+]])
+
+whatis("Name: AUTOCONF AUTOCONFVERSION")
+whatis("Documentation: https://www.gnu.org/software/autoconf/")
+
+load("perl")
+
+local AUTOCONF_ROOT = "AUTOCONFROOT"
+
+setenv("AUTOCONF_ROOT", AUTOCONF_ROOT)
+prepend_path("PATH", pathJoin(AUTOCONF_ROOT, "bin/"))
+prepend_path("MANPATH", pathJoin(AUTOCONF_ROOT, "share/man"))
+prepend_path("INFOPATH", pathJoin(AUTOCONF_ROOT, "share/info"))
+prepend_path("CMAKE_PREFIX_PATH", AUTOCONF_ROOT)

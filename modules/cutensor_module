@@ -6,6 +6,7 @@ NVIDIA cuTENSOR is a GPU-accelerated tensor linear algebra library for tensor co
 whatis("Name: cuTENSOR CUTENSORVERSION")
 whatis("CUDA Version: CUDAVERSION")
 
+prereq("gcc")
 prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
 
 local CUTENSOR_ROOT = "CUTENSORROOT"

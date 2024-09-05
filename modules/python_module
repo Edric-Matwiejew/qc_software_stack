@@ -8,6 +8,7 @@ module-whatis "Version: PYTHONVERSION"
 module-whatis "Compiler: COMPILER"
 module-whatis "Path: WHICHPYTHON"
 
+prereq gcc
 conflict python
 
 # Set variables

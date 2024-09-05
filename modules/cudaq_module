@@ -1,0 +1,18 @@
+-- -*- lua -*-
+help([[
+CUDA-Q streamlines hybrid application development and promotes productivity and scalability in quantum computing. It offers a unified programming model designed for a hybrid setting—that is, CPUs, GPUs, and QPUs working together. CUDA-Q contains support for programming in Python and in C++.
+]])
+
+whatis("Name: CUDA-Q")
+whatis("Version: CUDAQVERSION")
+whatis("CUDA Version: CUDAVERSION")
+whatis("Python Version: PYTHONVERSION")
+whatis("Documentation: https://nvidia.github.io/cuda-quantum")
+
+load("gcc/GCCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
+load("python/PYTHONVERSION", "cuquantum/CUQUANTUMVERSION")
+
+setenv("CUDAQ_ROOT", "CUDAQROOT")
+prepend_path("PYTHONPATH", "CUDAQROOT")
+
+execute {cmd="source " .. "CUDAQROOT" .. "/set_env.sh", modeA={"load"}}

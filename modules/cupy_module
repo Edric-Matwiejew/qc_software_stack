@@ -7,6 +7,7 @@ whatis("Name: cuQUANTUM CUPYVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://docs.cupy.dev/")
 
+prereq("gcc")
 prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
 load("python/PYTHONVERSION")
 

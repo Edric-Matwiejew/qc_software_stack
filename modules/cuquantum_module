@@ -7,6 +7,7 @@ whatis("Name: cuQUANTUM CUQUANTUMVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://docs.nvidia.com/cuda/cuquantum/24.03.0/")
 
+prereq("gcc")
 prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
 load("cutensor-12")
 conflict("mpi")

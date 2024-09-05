@@ -1,0 +1,25 @@
+-- -*- lua -*-
+help([[
+The GNU Compiler Collection is a collection of compilers from the GNU Project that support various programming languages, hardware architectures and operating systems.
+]])
+
+whatis("Name: GCC GCCVERSION")
+whatis("Documentation: https://gcc.gnu.org/")
+
+conflict("gcc")
+
+local GCC_ROOT = "GCCROOT"
+
+setenv("GCC_VERSION", "GCCVERSION")
+setenv("GCC_ROOT", GCC_ROOT)
+setenv("GCC_PATH", GCC_ROOT)
+setenv("GCC_PREFIX", GCC_ROOT)
+prepend_path("PATH", pathJoin(GCC_ROOT, "bin/"))
+prepend_path("MANPATH", pathJoin(GCC_ROOT, "share/man"))
+prepend_path("INFOPATH", pathJoin(GCC_ROOT, "share/info"))
+prepend_path("LIBRARY_PATH", pathJoin(GCC_ROOT, "lib64/"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(GCC_ROOT, "lib64/"))
+prepend_path("CPATH", pathJoin(GCC_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(GCC_ROOT, "lib64/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(GCC_ROOT, "include/"))
+

@@ -7,6 +7,7 @@ whatis("Name: Qiskit Aer QISKITAERVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://qiskit.github.io/qiskit-aer/")
 
+prereq("gcc")
 prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
 load("cuquantum/CUQUANTUMVERSION")
 load("python/PYTHONVERSION")

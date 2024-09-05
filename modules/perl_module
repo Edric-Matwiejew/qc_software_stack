@@ -1,0 +1,17 @@
+-- -*- lua -*-
+help([[
+Perl is a high-level, general-purpose, interpreted, dynamic programming language.
+]])
+
+whatis("Name: Perl PERLVERSION")
+whatis("Documentation: https://www.perl.org/docs.html")
+
+load("gcc/GCCVERSION")
+
+local PERL_ROOT = "PERLROOT"
+
+setenv("PERL_VERSION", "PERLVERSION")
+setenv("PERL_ROOT", PERL_ROOT)
+prepend_path("PATH", pathJoin(PERL_ROOT, "bin/"))
+prepend_path("PERL5LIB", pathJoin(PERL_ROOT, "lib/PERLVERSION"))
+
