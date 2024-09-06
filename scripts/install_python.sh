@@ -4,8 +4,6 @@ source settings.sh
 
 SETUPTOOLS_VERSION=71.0.0
 PIP_VERSION=24.1.2
-LIBFFI_VERSION=3.4.6 # required for the Python ctypes module
-SQLITE_VERSION=3.46.1
 
 module load gcc
 
@@ -14,56 +12,50 @@ export CXX=$(which g++)
 
 mkdir -p $MODULE_PREFIX/python
 
+cd $BUILD_TOOLS_BUILD_PREFIX
+
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"
 do
 	PYTHON_INSTALL_PREFIX=$INSTALL_PREFIX/python-$PYTHON_VERSION
 	
 	mkdir -p $PYTHON_INSTALL_PREFIX
+
+	#source $SETUP_PREFIX/scripts/install_python_prereqs.sh
 	
 	export PATH=$PYTHON_INSTALL_PREFIX/bin:$PATH
-	export CFLAGS="-I$PYTHON_INSTALL_PREFIX/include"
-	export LDFLAGS="-L$PYTHON_INSTALL_PREFIX/lib -lffi"
-	export PKG_CONFIG_PATH="$PYTHON_INSTALL_PREFIX/lib/pkgconfig"
-	export LD_LIBRARY_PATH=$PYTHON_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH
+
+	export CPATH=$PYTHON_INSTALL_PREFIX/include:$CPATH
+	export LIBRARY_PATH=$PYTHON_INSTALL_PREFIX/lib:$LIBRARY_PATH
+	export LIBRARY_PATH=$PYTHON_INSTALL_PREFIX/lib64:$LIBRARY_PATH
+
+	export LDFLAGS="-L$GCC_ROOT/lib -L$GCC_ROOT/lib64 -lffi -lsqlite3 -lbz2"
+	export CFLAGS="-I$GCC_ROOT/include"
+
+	export PKG_CONFIG_PATH=$PYTHON_INSTALL_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
+	export LD_LIBRARY_PATH=$PYTHON_INSTALL_PREFIX/lib:$PYTHON_INSTALL_PREFIX/lib64:$LD_LIBRARY_PATH
 	
-	cd $BUILD_PREFIX
-	
-	wget https://github.com/libffi/libffi/releases/download/v$LIBFFI_VERSION/libffi-$LIBFFI_VERSION.tar.gz
-	tar -xvf libffi-$LIBFFI_VERSION.tar.gz
-	cd libffi-$LIBFFI_VERSION
-	./configure --prefix=$PYTHON_INSTALL_PREFIX --enable-debug --disable-docs
-	make -j64 all
-	make install
 	cd $BUILD_PREFIX
 
-	wget https://github.com/sqlite/sqlite/archive/refs/tags/version-$SQLITE_VERSION.tar.gz
-	tar -xvf version-*.tar.gz
-	cd sqlite-version*
-	./configure --prefix=$PYTHON_INSTALL_PREFIX
-	make -j64
-	make sqlite3.c
-	make install
-	cd $BUILD_PREFIX
+	rm -rf cpython
+	rm -rf $PYTHON_INSTALL_PREFIX/*
 	
 	git clone --branch v$PYTHON_VERSION --depth=1 https://github.com/python/cpython.git
 	
 	cd cpython
-	
-	./configure \
-	--prefix=$PYTHON_INSTALL_PREFIX \
-	--enable-shared=yes \
-	--enable-profiling=no \
-	--enable-optimizations=yes \
-	--with-ensurepip=install \
-	--enable-loadable-sqlite-extensions=yes
-	
+
+	./configure --prefix=$PYTHON_INSTALL_PREFIX \
+            --enable-shared=yes \
+	    --enable-profiling=no \
+            --enable-optimizations=yes \
+            --enable-loadable-sqlite-extensions=yes
+
 	make -j64 all
 	make install
 	
 	ln $PYTHON_INSTALL_PREFIX/bin/python${PYTHON_VERSION:0:4} $PYTHON_INSTALL_PREFIX/bin/python
 
 	cd $BUILD_PREFIX
-	rm -rf cpython liffi* version* sqlite-version*
+	rm -rf cpython #liffi* version* sqlite-version*
 
 	MODULE_TEMP_PATH=$MODULE_TEMP_PREFIX/$PYTHON_VERSION
 	cp $SETUP_PREFIX/modules/python_module "$MODULE_TEMP_PATH"
