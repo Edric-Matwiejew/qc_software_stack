@@ -1,15 +1,20 @@
-#%Module -*- tcl -*-
-proc ModulesHelp { } {
-    puts stderr "A small build system with a focus on speed."
-}
+-- -*- lua -*-
+help([[
+A small build system with a focus on speed.
+]])
 
-module-whatis "Name: Ninja NINJAVERSION"
-module-whatis "Version: NINJAVERSION"
-module-whatis "Path: WHICHNINJA"
+whatis("Name: Ninja NINJAVERSION")
+whatis("Version: NINJAVERSION")
+whatis("Path: WHICHNINJA")
 
-prereq gcc
-conflict ninja
+if not isloaded("gcc") then
+    load("gcc")
+end
+depends_on("gcc")
 
-set ninja_path "NINJAINSTALLPATH"
+conflict("ninja")
 
-prepend-path PATH "$ninja_path/bin"
+local ninja_path = "NINJAINSTALLPATH"
+
+prepend_path("PATH", pathJoin(ninja_path, "bin"))
+

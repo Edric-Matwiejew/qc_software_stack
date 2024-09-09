@@ -1,20 +1,25 @@
-#%Module -*- tcl -*-
-proc ModulesHelp { } {
-    puts stderr "CMake, the cross-platform, open-source build system."
-}
+-- -*- lua -*-
+help([[
+CMake, the cross-platform, open-source build system.
+]])
 
-module-whatis "Name: CMake CMAKEVERSION"
-module-whatis "Version: CMAKEVERSION"
-module-whatis "Compiler: COMPILER"
-module-whatis "Path: WHICHCMAKE"
+whatis("Name: CMake CMAKEVERSION")
+whatis("Version: CMAKEVERSION")
+whatis("Compiler: COMPILER")
+whatis("Path: WHICHCMAKE")
 
-prereq gcc
-conflict cmake
+if not isloaded("gcc") then
+    load("gcc")
+end
+depends_on("gcc")
 
-set cmake_path "CMAKEINSTALLPATH"
+conflict("cmake")
 
-prepend-path PATH "$cmake_path/bin"
-prepend-path CMAKE_PREFIX_PATH "$cmake_path"
-prepend-path ACLOCAL_PATH "$cmake_path/share/aclocal"
-prepend-path MANPATH "$cmake_path/share/man"
-prepend-path PYTHONPATH "$cmake_path/lib"
+local cmake_path = "CMAKEINSTALLPATH"
+
+prepend_path("PATH", pathJoin(cmake_path, "bin"))
+prepend_path("CMAKE_PREFIX_PATH", cmake_path)
+prepend_path("ACLOCAL_PATH", pathJoin(cmake_path, "share/aclocal"))
+prepend_path("MANPATH", pathJoin(cmake_path, "share/man"))
+prepend_path("PYTHONPATH", pathJoin(cmake_path, "lib"))
+

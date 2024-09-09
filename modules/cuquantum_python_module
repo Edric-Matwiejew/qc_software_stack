@@ -7,11 +7,30 @@ whatis("Name: cuQUANTUM CUQUANTUMPYTHONVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://docs.nvidia.com/cuda/cuquantum")
 
-prereq("gcc")
-prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
-load("cuquantum/CUQUANTUMVERSION")
-load("python/PYTHONVERSION")
-load("py-PYTHONVERSION-cupy/CUPYVERSION")
+if not isloaded("gcc") then
+    load("gcc")
+end
+depends_on("gcc")
+
+if (not isloaded("nvhpc/NVHPCVERSION")) and (not isloaded("nvhpc-openmpi3/NVHPCVERSION")) then
+    load("nvhpc-openmpi3/NVHPCVERSION")
+end
+prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
+
+if not isloaded("cuquantum/CUQUANTUMVERSION") then
+    load("cuquantum/CUQUANTUMVERSION")
+end
+depends_on("cuquantum/CUQUANTUMVERSION")
+
+if not isloaded("python/PYTHONVERSION") then
+    load("python/PYTHONVERSION")
+end
+depends_on("python/PYTHONVERSION")
+
+if not isloaded("py-PYTHONVERSION-cupy/CUPYVERSION") then
+    load("py-PYTHONVERSION-cupy/CUPYVERSION")
+end
+depends_on("py-PYTHONVERSION-cupy/CUPYVERSION")
 
 local CUQUANTUM_PYTHON_ROOT = "CUQUANTUMPYTHONROOT"
 

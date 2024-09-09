@@ -7,7 +7,15 @@ whatis("Name: Spack")
 whatis("Version: SPACKVERSION")
 whatis("Path: SPACKINSTALLPATH/bin/spack")
 
-prereq("python/SPACKPYTHONVERSION")
+if not isloaded("gcc") then
+    load("gcc")
+end
+depends_on("gcc")
+
+if not isloaded("python/PYTHONVERSION") then
+    load("python/PYTHONVERSION")
+end
+depends_on("python/PYTHONVERSION")
 
 local USER = os.getenv("USER")
 local MYSOFTWARE = os.getenv("MYSOFTWARE")

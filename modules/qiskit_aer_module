@@ -7,10 +7,25 @@ whatis("Name: Qiskit Aer QISKITAERVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://qiskit.github.io/qiskit-aer/")
 
-prereq("gcc")
-prereq_any("nvhpc-openmpi3/NVHPCVERSION", "nvhpc/NVHPCVERSION")
-load("cuquantum/CUQUANTUMVERSION")
-load("python/PYTHONVERSION")
+if not isloaded("gcc") then
+    load("gcc")
+end
+depends_on("gcc")
+
+if (not isloaded("nvhpc/NVHPCVERSION")) and (not isloaded("nvhpc-openmpi3/NVHPCVERSION")) then
+    load("nvhpc-openmpi3/NVHPCVERSION")
+end
+prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
+
+if not isloaded("python/PYTHONVERSION") then
+    load("python/PYTHONVERSION")
+end
+depends_on("python/PYTHONVERSION")
+
+if not isloaded("cuquantum/CUQUANTUMVERSION") then
+    load("cuquantum/CUQUANTUMVERSION")
+end
+depends_on("cuquantum/CUQUANTUMVERSION")
 
 local QISKIT_AER_ROOT = "QISKITAERROOT"
 

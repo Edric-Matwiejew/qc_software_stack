@@ -8,8 +8,9 @@ module-whatis "Version: PYTHONVERSION"
 module-whatis "Compiler: COMPILER"
 module-whatis "Path: WHICHPYTHON"
 
-prereq gcc
 conflict python
+
+depends-on gcc
 
 # Set variables
 set user [exec sh -c "echo \$MYSOFTWARE"]

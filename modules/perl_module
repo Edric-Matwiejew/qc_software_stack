@@ -6,7 +6,10 @@ Perl is a high-level, general-purpose, interpreted, dynamic programming language
 whatis("Name: Perl PERLVERSION")
 whatis("Documentation: https://www.perl.org/docs.html")
 
-load("gcc/GCCVERSION")
+if not isloaded("gcc/GCCVERSION") then
+    load("gcc/GCCVERSION")
+end
+depends_on("gcc/GCCVERSION")
 
 local PERL_ROOT = "PERLROOT"
 
