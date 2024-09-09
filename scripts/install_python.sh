@@ -20,8 +20,6 @@ do
 	
 	mkdir -p $PYTHON_INSTALL_PREFIX
 
-	#source $SETUP_PREFIX/scripts/install_python_prereqs.sh
-	
 	export PATH=$PYTHON_INSTALL_PREFIX/bin:$PATH
 
 	export CPATH=$PYTHON_INSTALL_PREFIX/include:$CPATH
@@ -30,6 +28,7 @@ do
 
 	export LDFLAGS="-L$GCC_ROOT/lib -L$GCC_ROOT/lib64 -lffi -lsqlite3 -lbz2"
 	export CFLAGS="-I$GCC_ROOT/include"
+	export CPPFLAGS="-I$GCC_ROOT/include" # Needed for sqlite3 detection
 
 	export PKG_CONFIG_PATH=$PYTHON_INSTALL_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 	export LD_LIBRARY_PATH=$PYTHON_INSTALL_PREFIX/lib:$PYTHON_INSTALL_PREFIX/lib64:$LD_LIBRARY_PATH
@@ -47,7 +46,7 @@ do
             --enable-shared=yes \
 	    --enable-profiling=no \
             --enable-optimizations=yes \
-            --enable-loadable-sqlite-extensions=yes
+            --enable-loadable-sqlite-extensions
 
 	make -j64 all
 	make install
