@@ -55,8 +55,9 @@ build_and_install "binutils" "https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.t
 build_and_install "mpdecimal" "https://www.bytereef.org/software/mpdecimal/releases/mpdecimal-4.0.0.tar.gz" "4.0.0"
 build_and_install "xz" "https://github.com/tukaani-project/xz/releases/download/v5.6.2/xz-5.6.2.tar.gz" "5.6.2"
 
-# Building without function due to break in naming convension
 cd $BUILD_TOOLS_BUILD_PREFIX
+
+# Building without function due to break in naming convension
 SQLITE_VERSION=3.46.1
 wget https://github.com/sqlite/sqlite/archive/refs/tags/version-$SQLITE_VERSION.tar.gz
 tar -xvf version-*.tar.gz
@@ -90,24 +91,25 @@ sed -i 's/CFLAGS=-Wall -Winline -O2 -g/CFLAGS=-Wall -Winline -O2 -g -fPIC -share
 cat Makefile
 make -j64 all
 make install PREFIX=$BUILD_TOOLS_INSTALL_PREFIX
-
 cd $BUILD_TOOLS_BUILD_PREFIX
+
 wget https://www.openssl.org/source/openssl-3.3.1.tar.gz
 tar -xf openssl-3.3.1.tar.gz && cd openssl-3.3.1
 CC="$CC" CFLAGS="-fPIC" CXX="$CXX" CXXFLAGS="-fPIC" AR="${AR:-ar}" \
 perl Configure --prefix="$BUILD_TOOLS_INSTALL_PREFIX" zlib --with-zlib-lib="$BUILD_TOOLS_INSTALL_PREFIX"
 make -j64 && make install
 cd .. && rm -rf openssl-3.3.1.tar.gz openssl-3.3.1
+cd $BUILD_TOOLS_BUILD_PREFIX
 
 build_and_install "curl" "https://curl.se/download/curl-8.0.1.tar.gz" "8.0.1"
 
-cd $BUILD_TOOLS_BUILD_PREFIX
 wget https://github.com/openldap/openldap/archive/refs/tags/OPENLDAP_REL_ENG_2_6_8.tar.gz
 tar -xvf OPENLDAP_REL_ENG_2_6_8.tar.gz
 cd openldap-OPENLDAP_REL_ENG_2_6_8
 CC=$(which gcc) CXX=$(which g++) ./configure --prefix=$BUILD_TOOLS_INSTALL_PREFIX --with-tls=openssl --with-openssl=$BUILD_TOOLS_INSTALL_PREFIX
 make -j64
 make install
+cd $BUILD_TOOLS_BUILD_PREFIX
 
 build_and_install "git" "https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.43.5.tar.gz" "2.43.5" "--with-curl=$BUILD_TOOLS_INSTALL_PREFIX --with-openssl=$BUILD_TOOLS_INSTALL_PREFIX --with-expat=$BUILD_TOOLS_INSTALL_PREFIX --with-zlib=$BUILD_TOOLS_INSTALL_PREFIX --libexecdir=$BUILD_TOOLS_INSTALL_PREFIX/libexec"
 # If I don't do this I can't clone using https?
