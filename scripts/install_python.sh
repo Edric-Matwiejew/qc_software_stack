@@ -55,7 +55,7 @@ do
 	ln $PYTHON_INSTALL_PREFIX/bin/python${PYTHON_VERSION:0:4} $PYTHON_INSTALL_PREFIX/bin/python
 
 	cd $BUILD_PREFIX
-	rm -rf cpython #liffi* version* sqlite-version*
+	rm -rf cpython 
 
 	MODULE_TEMP_PATH=$MODULE_TEMP_PREFIX/$PYTHON_VERSION
 	cp $SETUP_PREFIX/modules/python_module "$MODULE_TEMP_PATH"
