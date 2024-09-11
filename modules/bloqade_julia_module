@@ -12,7 +12,8 @@ if not isloaded("julia/JULIAVERSION") then
 end
 depends_on("julia/JULIAVERSION")
 
-prepend_path("JULIA_DEPOT_PATH", "BLOQADEJULIADEPOTPATH")
-prepend_path("JULIA_LOAD_PATH", "BLOQADEJULIAPROJECTPATH")
+-- Julia will write to the first path, so appending here.
+append_path("JULIA_DEPOT_PATH", "BLOQADEJULIADEPOTPATH")
+append_path("JULIA_LOAD_PATH", "BLOQADEJULIAPROJECTPATH")
 
 
