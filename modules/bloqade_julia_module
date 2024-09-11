@@ -1,0 +1,18 @@
+-- -*- lua -*-
+help([[
+Package for the quantum computation and quantum simulation based on the neutral-atom architecture.
+]])
+
+whatis("Name: Bloqade")
+whatis("Version: BLOQADEJULIAVERSION")
+whatis("Documentation: https://queracomputing.github.io/Bloqade.jl/dev/")
+
+if not isloaded("julia/JULIAVERSION") then
+    load("julia/JULIAVERSION")
+end
+depends_on("julia/JULIAVERSION")
+
+prepend_path("JULIA_DEPOT_PATH", "BLOQADEJULIADEPOTPATH")
+prepend_path("JULIA_LOAD_PATH", "BLOQADEJULIAPROJECTPATH")
+
+

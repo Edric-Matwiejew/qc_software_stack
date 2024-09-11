@@ -19,7 +19,8 @@ bash scripts/install_cudaq.sh
 bash scripts/install_cupy.sh
 bash scripts/install_cuquantum_python.sh
 bash scripts/install_qiskit_aer.sh
-
+bash scripts/install_julia.sh
+bash scripts/install_bloqade_julia.sh
 bash scripts/install_spack.sh
 
 chmod -R 555 $INSTALL_PREFIX

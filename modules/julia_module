@@ -1,0 +1,36 @@
+-- -*- lua -*-
+help([[
+Julia is a high-level, general-purpose dynamic programming language, most commonly used for numerical analysis and computational science.
+]])
+
+whatis("Name: Julia")
+whatis("Version: JULIAVERSION")
+whatis("Documentation: https://docs.julialang.org/en/v1/")
+
+if not isloaded("gcc/GCCVERSION") then
+    load("gcc/GCCVERSION")
+end
+depends_on("gcc/GCCVERSION")
+
+if (not isloaded("nvhpc/NVHPCVERSION")) and (not isloaded("nvhpc-openmpi3/NVHPCVERSION")) then
+    load("nvhpc-openmpi3/NVHPCVERSION")
+end
+prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
+
+local MYSOFTWARE = os.getenv("MYSOFTWARE")
+local NVHPC_ROOT = os.getenv("NVHPC_ROOT")
+
+setenv("JULIA_VERSION", "JULIAVERSION")
+setenv("JULIA_ROOT", "JULIAROOT")
+
+prepend_path("PATH", "JULIAROOT/bin")
+setenv("JULIA_PROJECT", pathJoin(MYSOFTWARE, "USERJULIAPATH/user-project"))
+setenv("JULIA_DEPOT_PATH", "JULIADEPOTPATH:@stdlib")
+prepend_path("JULIA_DEPOT_PATH", pathJoin(MYSOFTWARE, "USERJULIAPATH/user-depot"))
+setenv("JULIA_LOAD_PATH", "JULIAROOT/../site-project:@:@vJULIAVERSIONMAJORMINOR:@stdlib")
+prepend_path("JULIA_LOAD_PATH", pathJoin(MYSOFTWARE, "USERJULIAPATH/user-project"))
+setenv("JULIA_CXXFLAGS", "JULIACXXFLAGS")
+setenv("JULIA_LDFLAGS", "JULIALDFLAGS")
+
+-- use system CUDA libraries
+setenv("JULIA_CUDA_LIBRARY_PATH", pathJoin(NVHPC_ROOT, "cuda"))
