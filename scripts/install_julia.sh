@@ -28,7 +28,7 @@ export JULIA_LDFLAGS="-L$GCC_ROOT/lib -L$GCC_ROOT/lib64 -L$NVHPC_ROOT/cuda/lib64
 
 USER_JULIA_PATH=software/ella/$DATE_TAG/julia-${JULIA_VERSION}
 
-mkdir -p $JULIA_INSTALL_PATH $JULIA_DEPOT_PATH $JULIA_LOAD_PATH
+#mkdir -p $JULIA_INSTALL_PATH $JULIA_DEPOT_PATH $JULIA_LOAD_PATH
 
 cd $JULIA_BUILD_PATH
 wget https://julialang-s3.julialang.org/bin/linux/aarch64/${JULIA_VERSION:0:4}/julia-${JULIA_VERSION}-linux-aarch64.tar.gz
@@ -42,6 +42,12 @@ cd $BUILD_PREFIX && rm -rf $JULIA_BUILD_PREFIX
 JULIA_DEBUG=Pkg julia -e "using Pkg; Pkg.add(PackageSpec(name=\"CUDA\",version=\"$JULIA_CUDA_VERSION\"))"
 JULIA_DEBUG=Pkg julia -e "using CUDA; CUDA.set_runtime_version!(local_toolkit=true)"
 JULIA_DEBUG=Pkg julia -e "using CUDA; CUDA.versioninfo()"
+
+JULIA_DEBUG=Pkg julia -e "using Pkg; Pkg.add(\"MPI\")"
+JULIA_DEBUG=Pkg julia -e 'using Pkg; Pkg.add("MPIPreferences")'
+JULIA_DEBUG=Pkg julia -e 'using MPIPreferences; MPIPreferences.use_system_binary()'
+
+JULIA_DEBUG=Pkg julia -e 'using Pkg; Pkg.update()'
 
 MODULE_TEMP_PATH=$MODULE_TEMP_PREFIX/$JULIA_VERSION
 cp $SETUP_PREFIX/modules/julia_module "$MODULE_TEMP_PATH"
