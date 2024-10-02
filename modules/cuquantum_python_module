@@ -7,15 +7,20 @@ whatis("Name: cuQUANTUM CUQUANTUMPYTHONVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://docs.nvidia.com/cuda/cuquantum")
 
+if (not isloaded("nvhpc/NVHPCVERSION")) then
+    load("nvhpc/NVHPCVERSION")
+end
+depends_on("nvhpc/NVHPCVERSION")
+
+if (not isloaded("hpcx-mt-ompi")) then
+    load("hpcx-mt-ompi")
+end
+depends_on("hpcx-mt-ompi")
+
 if not isloaded("gcc") then
     load("gcc")
 end
 depends_on("gcc")
-
-if (not isloaded("nvhpc/NVHPCVERSION")) and (not isloaded("nvhpc-openmpi3/NVHPCVERSION")) then
-    load("nvhpc-openmpi3/NVHPCVERSION")
-end
-prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
 
 if not isloaded("cuquantum/CUQUANTUMVERSION") then
     load("cuquantum/CUQUANTUMVERSION")

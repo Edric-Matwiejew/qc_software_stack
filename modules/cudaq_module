@@ -9,15 +9,20 @@ whatis("CUDA Version: CUDAVERSION")
 whatis("Python Version: PYTHONVERSION")
 whatis("Documentation: https://nvidia.github.io/cuda-quantum")
 
+if (not isloaded("nvhpc/NVHPCVERSION")) then
+    load("nvhpc/NVHPCVERSION")
+end
+depends_on("nvhpc/NVHPCVERSION")
+
+if (not isloaded("hpcx-mt-ompi")) then
+    load("hpcx-mt-ompi")
+end
+depends_on("hpcx-mt-ompi")
+
 if not isloaded("gcc/GCCVERSION") then
     load("gcc/GCCVERSION")
 end
 depends_on("gcc/GCCVERSION")
-
-if (not isloaded("nvhpc/NVHPCVERSION")) and (not isloaded("nvhpc-openmpi3/NVHPCVERSION")) then
-    load("nvhpc-openmpi3/NVHPCVERSION")
-end
-prereq_any("nvhpc/NVHPCVERSION", "nvhpc-openmpi3/NVHPCVERSION")
 
 if not isloaded("python/PYTHONVERSION") then
     load("python/PYTHONVERSION")
