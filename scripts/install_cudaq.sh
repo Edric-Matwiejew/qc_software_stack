@@ -14,7 +14,8 @@ module load automake
 #https://forums.developer.nvidia.com/t/when-upgrade-from-cuda12-4-to-12-5-the-compilation-became-broken/295814/4
 #https://github.com/NVIDIA/cccl/issues/1373
 
-module load nvhpc-openmpi3/$NVHPC_VERSION
+module load hpcx-mt-ompi
+module load nvhpc/$NVHPC_VERSION
 module load cuquantum/$CUQUANTUM_VERSION
 
 export CC=$(which gcc)

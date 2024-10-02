@@ -2,8 +2,9 @@
 
 source settings.sh
 
+module load nvhpc/$NVHPC_VERSION
+module load hpcx-mt-ompi
 module load gcc/$GCC_VERSION
-module load nvhpc-openmpi3/$NVHPC_VERSION
 
 JULIA_VERSION=1.10.5
 JULIA_CUDA_VERSION=5.4.3
@@ -64,7 +65,8 @@ sed -i "s|GCCVERSION|$GCC_VERSION|g" "$MODULE_TEMP_PATH"
 
 mv $MODULE_TEMP_PATH $JULIA_MODULE_PREFIX/$JULIA_VERSION.lua
 
-module unload nvhpc-openmpi3/$NVHPC_VERSION
-module unload gcc/$GCC_VERSION
+module load gcc/$GCC_VERSION
+module load hpcx-mt-ompi
+module load nvhpc/$NVHPC_VERSION
 
 

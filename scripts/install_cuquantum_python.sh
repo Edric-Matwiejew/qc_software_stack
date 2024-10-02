@@ -7,8 +7,9 @@ CUPY_VERSION=13.2.0
 CUTENSOR_VERSION=2.0.1
 CUQUANTUM_VERSION=24.03.0
 
+module load hpcx-mt-ompi
+module load nvhpc/$NVHPC_VERSION
 module load gcc
-module load nvhpc-openmpi3/$NVHPC_VERSION
 module load cuquantum/$CUQUANTUM_VERSION
 
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
@@ -68,4 +69,8 @@ do
 done
 
 module unload cuquantum/$CUQUANTUM_VERSION
-module unload nvhpc-openmpi3
+module unload gcc
+module unload nvhpc/$NVHPC_VERSION
+module unload hpcx-mt-ompi
+
+

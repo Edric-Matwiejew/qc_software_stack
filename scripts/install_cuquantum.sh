@@ -7,9 +7,11 @@ CUTENSOR_VERSION=2.0.1
 CUQUANTUM_BUILD_NUMBER=4
 NVHPC_OPENMPI_VERSION=3.1.5
 
+module load hpcx-mt-ompi
+module load nvhpc/$NVHPC_VERSION
 module load gcc
-module load nvhpc-openmpi3/$NVHPC_VERSION
 module load cutensor-12/$CUTENSOR_VERSION
+
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
 
 CUQUANTUM_INSTALL_PREFIX=$INSTALL_PREFIX/cuquantum-${CUQUANTUM_VERSION}
@@ -47,5 +49,8 @@ sed -i "s|CUQUANTUMROOT|$CUQUANTUM_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
 mkdir -p $CUQUANTUM_MODULE_PREFIX
 mv $MODULE_TEMP_PATH $CUQUANTUM_MODULE_PREFIX/.
 
-module unload cutensor-12/$CUTENSOR_VERSION
-module unload nvhpc-openmpi3/$NVHPC_VERSION
+module load cutensor-12/$CUTENSOR_VERSION
+module load gcc
+module load hpcx-mt-ompi
+module load nvhpc/$NVHPC_VERSION
+
