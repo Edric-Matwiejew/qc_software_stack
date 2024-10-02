@@ -23,6 +23,4 @@ bash scripts/install_julia.sh
 bash scripts/install_bloqade_julia.sh
 bash scripts/install_spack.sh
 
-chmod -R 555 $INSTALL_PREFIX
-
 rm -rf $BUILD_PREFIX
