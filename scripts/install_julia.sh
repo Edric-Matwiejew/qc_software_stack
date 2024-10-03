@@ -29,7 +29,7 @@ export JULIA_LDFLAGS="-L$GCC_ROOT/lib -L$GCC_ROOT/lib64 -L$NVHPC_ROOT/cuda/lib64
 
 USER_JULIA_PATH=software/ella/$DATE_TAG/julia-${JULIA_VERSION}
 
-#mkdir -p $JULIA_INSTALL_PATH $JULIA_DEPOT_PATH $JULIA_LOAD_PATH
+mkdir -p $JULIA_INSTALL_PATH $JULIA_DEPOT_PATH
 
 cd $JULIA_BUILD_PATH
 wget https://julialang-s3.julialang.org/bin/linux/aarch64/${JULIA_VERSION:0:4}/julia-${JULIA_VERSION}-linux-aarch64.tar.gz
