@@ -1,6 +1,6 @@
 source settings.sh
 
-CMAKE_VERSIONS=( 3.30.4 )
+CMAKE_VERSIONS=( 3.24.4 )
 
 cd $BUILD_PREFIX
 
