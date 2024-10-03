@@ -29,6 +29,11 @@ if not isloaded("python/PYTHONVERSION") then
 end
 depends_on("python/PYTHONVERSION")
 
+if not isloaded("cuquantum/CUQUANTUMVERSION") then
+    load("cuquantum/CUQUANTUMVERSION")
+end
+depends_on("cuquantum/CUQUANTUMVERSION")
+
 setenv("CUDAQ_ROOT", "CUDAQROOT")
 prepend_path("PYTHONPATH", "CUDAQROOT")
 
