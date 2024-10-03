@@ -12,13 +12,16 @@ CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '
 
 CUTENSOR_ARCHIVE=libcutensor-linux-${CUTENSOR_ARCH}-${CUTENSOR_VERSION}.${CUTENSOR_BUILD}-archive
 CUTENSOR_INSTALL_PREFIX=$INSTALL_PREFIX/cutensor-${CUTENSOR_VERSION}
-CUTENSOR_MODULE_PREFIX=$MODULE_PREFIX/cutensor-${CUDA_MAJOR_VERSION}
+CUTENSOR_MODULE_PREFIX=$MODULE_PREFIX/cutensor
 
 cd $BUILD_PREFIX
 
 # download and extract archive
 wget https://developer.download.nvidia.com/compute/cutensor/redist/libcutensor/linux-${CUTENSOR_ARCH}/$CUTENSOR_ARCHIVE.tar.xz
 tar -xvf ${CUTENSOR_ARCHIVE}.tar.xz
+
+#remove cuda-11 libraries
+rm -rf ${CUTENSOR_ARCHIVE}/lib/11*
 
 # install
 mkdir -p $CUTENSOR_INSTALL_PREFIX
