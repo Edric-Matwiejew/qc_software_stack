@@ -22,15 +22,15 @@ if (not isloaded("hpcx-mt-ompi")) then
 end
 depends_on("hpcx-mt-ompi")
 
-if not isloaded("cutensor-12") then
-    load("cutensor-12")
+if not isloaded("cutensor") then
+    load("cutensor")
 end
-depends_on("cutensor-12")
+depends_on("cutensor")
 
 local CUQUANTUM_ROOT = "CUQUANTUMROOT"
 
 setenv("CUQUANTUM_ROOT", CUQUANTUM_ROOT)
-setenv("CUTENSORNET_COMM_LIB", pathJoin(CUQUANTUM_ROOT, "distributed_interfaces/libcutensornet_distributed_mpi.so"))
+setenv("CUTENSORNET_COMM_LIB", pathJoin(CUQUANTUM_ROOT, "distributed_interfaces/libcutensornet_distributed_interface_mpi.so"))
 prepend_path("LIBRARY_PATH", pathJoin(CUQUANTUM_ROOT, "lib/"))
 prepend_path("LD_LIBRARY_PATH", pathJoin(CUQUANTUM_ROOT, "lib/"))
 prepend_path("LD_LIBRARY_PATH", pathJoin(CUQUANTUM_ROOT, "distributed_interfaces/"))
