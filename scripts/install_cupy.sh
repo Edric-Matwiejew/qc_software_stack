@@ -13,7 +13,7 @@ PYTHON_C_COMPILER=$(which gcc)
 PYTHON_CXX_COMPILER=$(which g++)
 
 module load nvhpc/$NVHPC_VERSION
-module load cutensor-12/$CUTENSOR_VERSION
+module load cutensor/$CUTENSOR_VERSION
 
 CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1] "." a[2]}')
 	
@@ -77,5 +77,5 @@ do
 
 done
 
-module unload cutensor-12/$CUTENSOR_VERSION
+module unload cutensor/$CUTENSOR_VERSION
 module unload nvhpc
