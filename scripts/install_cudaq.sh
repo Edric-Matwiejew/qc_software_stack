@@ -3,19 +3,13 @@ source settings.sh
 CUDA_QUANTUM_VERSION=0.8.0
 CUQUANTUM_VERSION=24.03.0
 
-module load gcc
-module load cmake
-module load ninja
-module load perl
-module load autoconf
-module load automake
-
 # Need to use NVHPC 24.5 or lower:
 #https://forums.developer.nvidia.com/t/when-upgrade-from-cuda12-4-to-12-5-the-compilation-became-broken/295814/4
 #https://github.com/NVIDIA/cccl/issues/1373
-
-module load hpcx-mt-ompi
-module load nvhpc/$NVHPC_VERSION
+module load cmake
+module load ninja
+module load perl
+#module load nvhpc/$NVHPC_VERSION
 module load cuquantum/$CUQUANTUM_VERSION
 
 export CC=$(which gcc)
@@ -121,11 +115,11 @@ do
 	cd $CUDA_QUANTUM_BUILD_PREFIX
 	
 	# Numpy required for LLVM build
-	python -m pip install -v "numpy<=1.26.4"
-	python -m pip install -v "pytest<=8.3.2"
-	python -m pip install -v "fastapi<=0.112.2"
-	python -m pip install -v "uvicorn<=0.30.6"
-	python -m pip install -v "llvmlite<=0.43.0"
+	python -m pip install -v --no-cache-dir "numpy<=1.26.4"
+	python -m pip install -v --no-cache-dir "pytest<=8.3.2"
+	python -m pip install -v --no-cache-dir "fastapi<=0.112.2"
+	python -m pip install -v --no-cache-dir "uvicorn<=0.30.6"
+	python -m pip install -v --no-cache-dir "llvmlite<=0.43.0"
 	
 	git clone -b $CUDA_QUANTUM_VERSION --depth 1 https://github.com/NVIDIA/cuda-quantum
 	cd cuda-quantum/scripts
@@ -139,10 +133,16 @@ do
 	export LIBRARY_PATH=$LLVM_INSTALL_PREFIX/lib:$LIBRARY_PATH
 	export LD_LIBRARY_PATH=$LLVM_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH
 
+	# https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h=6b927b1297e66e26e62e722bf15c921dcbbd25b9
+	export CUDAQ_WERROR=OFF
 	bash build_cudaq.sh
 
 	# configure clang to use libstdc++ (GCC)
 	sed -i '1i --stdlib=libstdc++' $LLVM_INSTALL_PREFIX/bin/clang++.cfg
+
+	cd $CUDAQ_INSTALL_PREFIX/distributed_interfaces
+	. activate_custom_mpi.sh
+	cd $CUDA_QUANTUM_BUILD_PREFIX
 
 	module unload python
 
