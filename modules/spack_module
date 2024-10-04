@@ -21,12 +21,12 @@ local USER = os.getenv("USER")
 local MYSOFTWARE = os.getenv("MYSOFTWARE")
 
 local spack_path = "SPACKINSTALLPATH"
-local SPACK_USER_CONFIG_PATH = "USERSPACKPATH"
 
 -- setenv("SPACK_PYTHON", "SPACKPYTHON")
-setenv("SPACK_USER_CONFIG_PATH", SPACK_USER_CONFIG_PATH)
-setenv("SPACK_USER_CACHE_PATH", SPACK_USER_CONFIG_PATH)
+setenv("SPACK_USER_CONFIG_PATH", pathJoin(MYSOFTWARE, "USERSPACKPATH"))
+setenv("SPACK_USER_CACHE_PATH", pathJoin(MYSOFTWARE, "USERSPACKPATH"))
 setenv("TMPDIR", pathJoin("/tmp", USER))
+setenv("SSL_CERT_FILE", "SSLCERTFILE")
 
 local function create_directory(path)
     if not isDir(path) then
