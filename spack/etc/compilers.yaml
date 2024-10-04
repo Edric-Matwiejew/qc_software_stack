@@ -9,6 +9,6 @@ compilers:
     flags: {}
     operating_system: rocky9
     target: aarch64
-    modules: [gcc/GCCVERSION]
+    modules: [gcc/GCCVERSION, hpcx-mt-ompi, python/PYTHONVERSION]
     environment: {}
     extra_rpaths: []
