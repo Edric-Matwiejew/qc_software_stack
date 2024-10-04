@@ -37,7 +37,6 @@ sed -i "s|CXXBINARY|$(which g++)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.y
 sed -i "s|F77BINARY|$(which gfortran)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
 sed -i "s|F90BINARY|$(which gfortran)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
 sed -i "s|PYTHONVERSION|$SPACK_PYTHON_VERSION|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
-sed -i "s|SSLCERTFILE|$(python -m certifi)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
 
 SPACK_MODULE_TEMP_PATH="$MODULE_TEMP_PREFIX/$SPACK_VERSION.lua"
 cp "$SETUP_PREFIX/modules/spack_module" "$SPACK_MODULE_TEMP_PATH"
@@ -46,6 +45,8 @@ sed -i "s|SPACKINSTALLPATH|$SPACK_INSTALL_PREFIX|g" "$SPACK_MODULE_TEMP_PATH"
 sed -i "s|PYTHONVERSION|$SPACK_PYTHON_VERSION|g" "$SPACK_MODULE_TEMP_PATH" # must replace before below
 sed -i "s|SPACKPYTHON|$SPACK_PYTHON|g" "$SPACK_MODULE_TEMP_PATH"
 sed -i "s|USERSPACKPATH|$USER_SPACK_PATH|g" "$SPACK_MODULE_TEMP_PATH"
+sed -i "s|SSLCERTFILE|$(python -m certifi)|g" "$SPACK_MODULE_TEMP_PATH"
+
 mkdir -p "$SPACK_MODULE_PREFIX"
 mv "$SPACK_MODULE_TEMP_PATH" "$SPACK_MODULE_PREFIX"/.
 
