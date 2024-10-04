@@ -3,6 +3,7 @@
 source settings.sh
 
 SPACK_VERSION=0.22.1
+
 SPACK_PYTHON_VERSION=$PYTHON_DEFAULT_VERSION
 SPACK_INSTALL_PREFIX="$INSTALL_PREFIX/spack-${SPACK_VERSION}"
 SPACK_MODULE_PREFIX="$MODULE_PREFIX/spack"
@@ -26,6 +27,12 @@ module load gcc
 module load python/$SPACK_PYTHON_VERSION
 SPACK_PYTHON=$(which python3)
 
+sed -i "s|GCCVERSION|$GCC_VERSION|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
+sed -i "s|CCBINARY|$(which gcc)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
+sed -i "s|CXXBINARY|$(which g++)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
+sed -i "s|F77BINARY|$(which gfortran)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
+sed -i "s|F90BINARY|$(which gfortran)|g" "$SPACK_INSTALL_PREFIX/etc/spack/compilers.yaml"
+
 SPACK_MODULE_TEMP_PATH="$MODULE_TEMP_PREFIX/$SPACK_VERSION.lua"
 cp "$SETUP_PREFIX/modules/spack_module" "$SPACK_MODULE_TEMP_PATH"
 sed -i "s|SPACKVERSION|$SPACK_VERSION|g" "$SPACK_MODULE_TEMP_PATH"
@@ -38,3 +45,4 @@ mv "$SPACK_MODULE_TEMP_PATH" "$SPACK_MODULE_PREFIX"/.
 
 
 module unload python
+module unload gcc

@@ -1,14 +1,14 @@
 compilers:
 - compiler:
-    spec: gcc@=11.4.1
+    spec: gcc@=GCCVERSION
     paths:
-      cc: /usr/bin/gcc
-      cxx: /usr/bin/g++
-      f77: /usr/bin/gfortran
-      fc: /usr/bin/gfortran
+      cc: CCBINARY
+      cxx: CXXBINARY
+      f77: F77BINARY
+      fc: F90BINARY
     flags: {}
     operating_system: rocky9
     target: aarch64
-    modules: []
+    modules: [gcc/GCCVERSION]
     environment: {}
     extra_rpaths: []
