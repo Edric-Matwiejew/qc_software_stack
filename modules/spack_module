@@ -28,17 +28,4 @@ setenv("SPACK_USER_CACHE_PATH", pathJoin(MYSOFTWARE, "USERSPACKPATH"))
 setenv("TMPDIR", pathJoin("/tmp", USER))
 setenv("SSL_CERT_FILE", "SSLCERTFILE")
 
-local function create_directory(path)
-    if not isDir(path) then
-        local success = os.execute("mkdir -p " .. path)
-        if not success then
-            LmodError("Failed to create the directory: " .. path)
-        end
-    end
-end
-
-create_directory(SPACK_USER_CONFIG_PATH)
-create_directory(pathJoin(SPACK_USER_CONFIG_PATH, "opt/spack"))
-create_directory(pathJoin(SPACK_USER_CONFIG_PATH, "modules"))
-
 execute {cmd="source " .. spack_path .. "/share/spack/setup-env.sh", modeA={"load"}}
