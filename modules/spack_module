@@ -19,7 +19,7 @@ depends_on("python/PYTHONVERSION")
 
 local USER = os.getenv("USER")
 local MYSOFTWARE = os.getenv("MYSOFTWARE")
-
+local SPACK_USER_CONFIG_PATH = pathJoin(MYSOFTWARE, "USERSPACKPATH")
 local spack_path = "SPACKINSTALLPATH"
 
 -- setenv("SPACK_PYTHON", "SPACKPYTHON")
