@@ -1,0 +1,42 @@
+-- -*- lua -*-
+help([[
+MPI for Python provides Python bindings for the Message Passing Interface (MPI) standard, 
+allowing Python applications to exploit multiple processors on workstations, clusters and supercomputers.
+]])
+
+whatis("Name: MPI for Python MPI4PYVERSION")
+whatis("CUDA Version: CUDAVERSION")
+whatis("Documentation: https://mpi4py.readthedocs.io/en/4.0.1")
+
+if (not isloaded("nvhpc/NVHPCVERSION")) then
+    load("nvhpc/NVHPCVERSION")
+end
+depends_on("nvhpc/NVHPCVERSION")
+
+if (not isloaded("hpcx-mt-ompi")) then
+    load("hpcx-mt-ompi")
+end
+depends_on("hpcx-mt-ompi")
+
+if not isloaded("gcc") then
+    load("gcc")
+end
+depends_on("gcc")
+
+if not isloaded("python/PYTHONVERSION") then
+    load("python/PYTHONVERSION")
+end
+depends_on("python/PYTHONVERSION")
+
+local MPI4PY_ROOT = "MPI4PYROOT"
+
+setenv("MPI4PY_ROOT", MPI4PY_ROOT)
+prepend_path("PATH", pathJoin(MPI4PY_ROOT, "bin"))
+prepend_path("LIBRARY_PATH", pathJoin(MPI4PY_ROOT, "lib/"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(MPI4PY_ROOT, "lib/"))
+prepend_path("CPATH", pathJoin(MPI4PY_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(MPI4PY_ROOT, "lib/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(MPI4PY_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(MPI4PY_ROOT, "lib/"))
+prepend_path("PYTHONPATH", pathJoin(MPI4PY_ROOT, "lib/pythonPYTHONVERSION_MAJOR_MINOR/site-packages"))
+
