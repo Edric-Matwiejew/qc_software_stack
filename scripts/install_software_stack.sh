@@ -17,6 +17,7 @@ bash scripts/install_cutensor.sh
 bash scripts/install_cuquantum.sh
 bash scripts/install_cudaq.sh
 bash scripts/install_cupy.sh
+bash scripts/install_mpi4py.sh
 bash scripts/install_cuquantum_python.sh
 bash scripts/install_qiskit_aer.sh
 bash scripts/install_julia.sh
