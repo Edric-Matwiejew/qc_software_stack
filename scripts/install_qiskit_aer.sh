@@ -9,6 +9,7 @@ CUQUANTUM_VERSION=24.03.0
 module load gcc
 module load cmake
 module load ninja
+module load hpcx-mt-ompi
 module load nvhpc/$NVHPC_VERSION
 module load cuquantum/$CUQUANTUM_VERSION
 
@@ -45,6 +46,7 @@ do
 		-DAER_THRUST_BACKEND=CUDA \
 		-DCUQUANTUM_ROOT=$CUQUANTUM_ROOT \
 		-DCUTENSOR_ROOT=$CUTENSOR_ROOT \
+		-DAER_MPI=True \
 		-DAER_ENABLE_CUQUANTUM=true --		
 
 	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall dist/qiskit_aer*.whl
