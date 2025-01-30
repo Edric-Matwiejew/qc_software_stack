@@ -1,11 +1,8 @@
 if [ -z ${__PSC_SETTINGS__+x} ]; then # include guard
 __PSC_SETTINGS__=1
 
-#module unload pawseyenv
-#module load pawsey
-
 # EDIT at each rebuild of the software stack
-DATE_TAG="2024.10.02"
+DATE_TAG="2024.10"
 SYSTEM="ella"
 SETUP_PREFIX=$PWD # folder containing settings.sh ./scripts and ./modules
 BUILD_PREFIX=/tmp/$DATE_TAG
@@ -13,7 +10,7 @@ MODULE_TEMP_PREFIX=$BUILD_PREFIX/modules
 
 # using project directory for test deployment
 if [ -z ${INSTALL_PREFIX+x} ]; then
-    INSTALL_PREFIX="/scratch/pawsey0001/software/${DATE_TAG}"
+    INSTALL_PREFIX="/software/ella/software/${DATE_TAG}"
 fi
 
 if [ "${INSTALL_PREFIX%$DATE_TAG}" = "${INSTALL_PREFIX}" ]; then
@@ -23,7 +20,7 @@ fi
 
 # using project directory for test deployment
 if [ -z ${MODULE_PREFIX+x} ]; then
-    MODULE_PREFIX="/scratch/pawsey0001/modulefiles/${DATE_TAG}"
+    MODULE_PREFIX="/software/ella/${DATE_TAG}"
 fi
 
 if [ "${MODULE_PREFIX%$DATE_TAG}" = "$MODULE_PREFIX}" ]; then
@@ -47,7 +44,5 @@ PYTHON_DEFAULT_VERSION=3.10.14
 mkdir -p $INSTALL_PREFIX
 mkdir -p $MODULE_PREFIX
 mkdir -p $BUILD_PREFIX/modules
-
-export MODULEPATH=/opt/nvidia/hpc_sdk/modulefiles:$MODULE_PREFIX:$MODULEPATH
 
 fi # close include guard
