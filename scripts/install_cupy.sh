@@ -2,10 +2,6 @@
 
 source settings.sh
 
-CUPY_VERSION=13.2.0
-CUPY_GIT_TAG=v13
-CUTENSOR_VERSION=2.0.1
-
 module load gcc
 
 # Build against the toolchain used to build Python
@@ -26,6 +22,7 @@ export CUDA_PATH=$NVHPC_ROOT/cuda
 export CFLAGS="-I$NVHPC_ROOT/cuda/include \
                -I$NVHPC_ROOT/math_libs/include \
                -I$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION/targets/x86_64-linux/include \
+               -I$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION/targets/sbsa-linux/include \
 	       -I$CUTENSOR_ROOT/include"
 
 export LDFLAGS="-L$NVHPC_ROOT/cuda/lib64 \
