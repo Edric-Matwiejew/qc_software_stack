@@ -7,10 +7,10 @@ whatis("Name: cuQUANTUM CUQUANTUMVERSION")
 whatis("CUDA Version: CUDAVERSION")
 whatis("Documentation: https://docs.nvidia.com/cuda/cuquantum/24.03.0/")
 
-if not isloaded("gcc") then
-    load("gcc")
+if not isloaded("gcc/GCCVERSION") then
+    load("gcc/GCCVERSION")
 end
-depends_on("gcc")
+depends_on("gcc/GCCVERSION")
 
 if (not isloaded("nvhpc/NVHPCVERSION")) then
     load("nvhpc/NVHPCVERSION")
@@ -22,10 +22,10 @@ if (not isloaded("hpcx-mt-ompi")) then
 end
 depends_on("hpcx-mt-ompi")
 
-if not isloaded("cutensor") then
-    load("cutensor")
+if not isloaded("cutensor/CUTENSORVERSION") then
+    load("cutensor/CUTENSORVERSION")
 end
-depends_on("cutensor")
+depends_on("cutensor/CUTENSORVERSION")
 
 local CUQUANTUM_ROOT = "CUQUANTUMROOT"
 

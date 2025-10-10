@@ -35,6 +35,6 @@ end
 depends_on("cuquantum/CUQUANTUMVERSION")
 
 setenv("CUDAQ_ROOT", "CUDAQROOT")
-prepend_path("PYTHONPATH", "CUDAQROOT")
+prepend_path("PYTHONPATH", "CUDAQROOT/python/lib/pythonPYTHONVERSION/site-packages")
 
 execute {cmd="source " .. "CUDAQROOT" .. "/set_env.sh", modeA={"load"}}
