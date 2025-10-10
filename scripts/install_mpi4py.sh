@@ -2,14 +2,12 @@
 
 source settings.sh
 
-MPI4PY_VERSION=4.01
-CUPY_VERSION=13.2.0
 
-module load gcc
 module load cmake
 module load ninja
-module load hpcx-mt-ompi
 module load nvhpc/$NVHPC_VERSION
+module load hpcx-mt-ompi
+module load gcc
 
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
 

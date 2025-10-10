@@ -1,9 +1,7 @@
 source settings.sh
 
-module load gcc
-module load cmake
-
-NINJA_VERSION=1.11.1
+module load gcc/$GCC_VERSION
+module load cmake/$CMAKE_VERSION
 
 NINJA_INSTALL_PREFIX=$INSTALL_PREFIX/ninja-$NINJA_VERSION
 

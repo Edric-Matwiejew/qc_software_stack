@@ -13,14 +13,14 @@ export CC=$HOST_CC
 export CXX=$HOST_CXX
 
 cd $BUILD_PREFIX
-wget https://ftp.tsukuba.wide.ad.jp/software/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.gz
+wget https://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.gz
 tar -I pigz -xf gcc-$GCC_VERSION.tar.gz
 cd gcc-$GCC_VERSION
 ./contrib/download_prerequisites
 rm -rf objdir && mkdir -p objdir
 cd objdir
 $BUILD_PREFIX/gcc-$GCC_VERSION/configure --prefix=$GCC_INSTALL_PREFIX
-make -j 32
+make -j 64 
 make install
 
 MODULE_TEMP_PATH=$MODULE_TEMP_PREFIX/$GCC_VERSION

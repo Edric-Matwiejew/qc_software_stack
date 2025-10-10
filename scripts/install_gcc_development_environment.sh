@@ -2,31 +2,11 @@
 
 source settings.sh
 
-# Define versions of the packages
-AUTOCONF_VERSION=2.72
-AUTOMAKE_VERSION=1.17
-LIBTOOL_VERSION=2.4.7
-PKG_CONFIG_VERSION=0.29.2
-BINUTILS_VERSION=2.43.1
-MPDECIMAL_VERSION=4.0.0
-XZ_VERSION=5.6.2
-SQLITE_VERSION=3.46.1
-ZLIB_VERSION=1.3
-EXPAT_VERSION=2.6.3
-LIBFFI_VERSION=3.4.4
-BZIP2_VERSION=1.0.8
-OPENSSL_VERSION=3.3.1
-OPENLDAP_VERSION=2_6_8
-GIT_VERSION=2.43.5
-
 # Check if essential variables are set
 if [[ -z "$INSTALL_PREFIX" || -z "$GCC_VERSION" || -z "$BUILD_PREFIX" ]]; then
     echo "Required variables are not set. Please check settings.sh."
     exit 1
 fi
-
-module load gcc
-module load perl
 
 # Build tools installed with the default GCC
 export BUILD_TOOLS_INSTALL_PREFIX="$INSTALL_PREFIX/gcc-$GCC_VERSION"

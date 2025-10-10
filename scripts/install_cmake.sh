@@ -1,7 +1,5 @@
 source settings.sh
 
-CMAKE_VERSIONS=( 3.24.4 )
-
 cd $BUILD_PREFIX
 
 module load gcc

@@ -2,10 +2,7 @@
 
 source settings.sh
 
-SETUPTOOLS_VERSION=71.0.0
-PIP_VERSION=24.1.2
-
-module load gcc
+module load gcc/$GCC_VERSION
 
 export CC=$(which gcc)
 export CXX=$(which g++)
