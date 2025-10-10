@@ -1,15 +1,10 @@
 source settings.sh
 
-CUDA_QUANTUM_VERSION=0.8.0
-CUQUANTUM_VERSION=24.03.0
-
-# Need to use NVHPC 24.5 or lower:
-#https://forums.developer.nvidia.com/t/when-upgrade-from-cuda12-4-to-12-5-the-compilation-became-broken/295814/4
-#https://github.com/NVIDIA/cccl/issues/1373
 module load cmake
 module load ninja
-module load perl
-#module load nvhpc/$NVHPC_VERSION
+module load nvhpc/$NVHPC_VERSION
+module load gcc/$GCC_VERSION 
+module load hpcx-mt-ompi
 module load cuquantum/$CUQUANTUM_VERSION
 
 export CC=$(which gcc)
@@ -63,13 +58,12 @@ do
 	mkdir -p $OPENSSL_INSTALL_PREFIX
 	export CURL_INSTALL_PREFIX=$CUDA_QUANTUM_INSTALL_PREFIX/curl
 	mkdir -p $CURL_INSTALL_PREFIX
+	export AWS_INSTALL_PREFIX=$CUDA_QUANTUM_INSTALL_PREFIX/aws
+	mkdir -p $AWS_INSTALL_PREFIX
 
 	
-	# Variables for LLVM build
-	export Python3_EXECUTABLE=$(which python)
-	export pybind11_DIR=$PYBIND11_INSTALL_PREFIX
-
 	cd $CUDA_QUANTUM_BUILD_PREFIX
+	echo $CUDA_QUANTUM_BUILD_PREFIX
 
 	# Install Zlib as it is required for the OpenSSL build.
 	# [Zlib] Needed to build LLVM with zlib support (used by linker)
@@ -114,18 +108,27 @@ do
 
 	cd $CUDA_QUANTUM_BUILD_PREFIX
 	
-	# Numpy required for LLVM build
+	## Numpy required for LLVM build
 	python -m pip install -v --no-cache-dir "numpy<=1.26.4"
+	python -m pip install -v --no-cache-dir  "pybind11"
 	python -m pip install -v --no-cache-dir "pytest<=8.3.2"
 	python -m pip install -v --no-cache-dir "fastapi<=0.112.2"
 	python -m pip install -v --no-cache-dir "uvicorn<=0.30.6"
 	python -m pip install -v --no-cache-dir "llvmlite<=0.43.0"
 	
-	git clone -b $CUDA_QUANTUM_VERSION --depth 1 https://github.com/NVIDIA/cuda-quantum
+        if [[ ! -d cuda-quantum ]]; then
+	    git clone -b $CUDA_QUANTUM_VERSION --depth 1 https://github.com/NVIDIA/cuda-quantum
+	    sed -Ei '/^export [A-Z_]+_INSTALL_PREFIX=/ s|^export ([A-Z_]+)=(.*)$|export \1=${\1:-\2}|' configure_build.sh
+        fi
+
 	cd cuda-quantum/scripts
-	
+
+	# Variables for LLVM build
+	export Python3_EXECUTABLE=$(which python)
+	export pybind11_DIR="$(python3 -m pybind11 --cmakedir)"
+
 	# Install missing prerequisites. Everything aside from CMake, Ninja, Zlib and OpenSSL.
-	export LLVM_PROJECTS='clang;lld;mlir;python-bindings;openmp;runtimes'
+	LLVM_PROJECTS='clang;flang;lld;mlir;python-bindings;openmp;runtimes'
 	bash install_prerequisites.sh
 
 	export PATH=$LLVM_INSTALL_PREFIX/bin:$PATH
@@ -133,16 +136,52 @@ do
 	export LIBRARY_PATH=$LLVM_INSTALL_PREFIX/lib:$LIBRARY_PATH
 	export LD_LIBRARY_PATH=$LLVM_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH
 
-	# https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h=6b927b1297e66e26e62e722bf15c921dcbbd25b9
-	export CUDAQ_WERROR=OFF
-	bash build_cudaq.sh
+	#########################
+	# build and install nvq++
+	#########################
+
+	CUDAQ_WERROR=OFF CUDAQ_PYTHON_SUPPORT=FALSE bash build_cudaq.sh
 
 	# configure clang to use libstdc++ (GCC)
 	sed -i '1i --stdlib=libstdc++' $LLVM_INSTALL_PREFIX/bin/clang++.cfg
 
+	MPI_PATH=$MPI_HOME
 	cd $CUDAQ_INSTALL_PREFIX/distributed_interfaces
 	. activate_custom_mpi.sh
-	cd $CUDA_QUANTUM_BUILD_PREFIX
+
+
+	################################
+	# build and install cudaq-python
+	################################
+
+	cd $CUDA_QUANTUM_BUILD_PREFIX/cuda-quantum
+	rm -rf _skbuild
+
+	python -m pip install --upgrade build
+
+	# build the wheel
+	CMAKE_PREFIX_PATH="$(dirname "$(dirname "$PYBIND11_INSTALL_PREFIX")"):$CMAKE_PREFIX_PATH" \
+	PATH="$LLVM_INSTALL_PREFIX/bin:$PATH" \
+	CPATH="$LLVM_INSTALL_PREFIX/include:$CPATH" \
+	LIBRARY_PATH="$LLVM_INSTALL_PREFIX/lib:$LIBRARY_PATH" \
+	LD_LIBRARY_PATH="$LLVM_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH" \
+	CC="$LLVM_INSTALL_PREFIX/bin/clang" \
+	CXX="$LLVM_INSTALL_PREFIX/bin/clang++" \
+	FC="$LLVM_INSTALL_PREFIX/bin/flang-new" \
+	CXXFLAGS="${CXXFLAGS:-} -Wno-deprecated-declarations" \
+	CUDAFLAGS="${CUDAFLAGS:-} -Xcompiler=-Wno-deprecated-declarations -Wno-deprecated-gpu-targets" \
+	CMAKE_ARGS="-DCMAKE_COMPILE_WARNING_AS_ERROR=OFF \
+	            -DCMAKE_CUDA_FLAGS='-Xcompiler=-Wno-deprecated-declarations -Wno-deprecated-gpu-targets' \
+		    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+		    -DLLVM_ENABLE_LTO=Off \
+	            -DCMAKE_CXX_FLAGS='-stdlib=libstdc++'" \
+	CUDAQ_WERROR=OFF \
+	PYTHONPATH="$PYTHONPATH:$PYBIND11_INSTALL_PREFIX" \
+	python3 -m build --wheel
+
+
+	# install the wheel
+	PYTHONUSERBASE=$CUDA_QUANTUM_INSTALL_PREFIX python3 -m pip install --user --no-deps dist/cuda_quantum*.whl
 
 	module unload python
 
