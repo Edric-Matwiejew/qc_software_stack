@@ -1,0 +1,80 @@
+-- =============================================================================
+--  PrgEnv: NVHPC CUDA + GCC + HPC-X (OpenMPI)
+-- =============================================================================
+family("PrgEnv_nvhpc_mpi")
+
+help([[
+Loads NVHPC CUDA Toolkit (from HPC SDK), HPC-X MPI (OpenMPI), and GCC compilers.
+NVHPC provides CUDA & math/comm libs; GCC is selected as the host compiler suite.
+]])
+
+whatis("Name: NVHPC CUDA + HPC-X MPI + GCC build environment (Grace Hopper)")
+whatis("Description: NVHPC CUDA Toolkit & libs + HPC-X MPI with GCC toolchain")
+
+depends_on("gcc/GCCVERSION")
+depends_on("nvhpc/NVHPCVERSION")
+depends_on("hpcx-mt-ompi")
+
+local nvhpc_root = os.getenv("NVHPC_ROOT")
+local cuda_root = pathJoin(nvhpc_root, "cuda")
+local sbsa_lib  = pathJoin(cuda_root, "targets/sbsa-linux/lib")
+
+setenv("CUDA_HOME",               cuda_root)
+setenv("CUDA_PATH",               cuda_root)
+setenv("CUDA_TOOLKIT_ROOT_DIR",   cuda_root)
+setenv("CUDA_NVCC_EXECUTABLE",    pathJoin(cuda_root, "bin/nvcc"))
+setenv("CUDA_INCLUDE_PATH",       pathJoin(cuda_root, "include"))
+setenv("CUDA_LIB_PATH",           pathJoin(cuda_root, "lib64"))
+setenv("CUDACXX",                 pathJoin(cuda_root, "bin/nvcc"))
+
+local CUDA_ARCHS         = os.getenv("CUDA_ARCHITECTURES") or "90"
+local NVCC_GENCODE_FLAGS = os.getenv("NVCC_GENCODE") or ("-gencode arch=compute_"..CUDA_ARCHS..",code=sm_"..CUDA_ARCHS)
+setenv("CUDA_ARCHITECTURES", CUDA_ARCHS)
+setenv("NVCC_GENCODE",       NVCC_GENCODE_FLAGS)
+
+prepend_path("PATH",              pathJoin(cuda_root, "bin"))
+prepend_path("LD_LIBRARY_PATH",   pathJoin(cuda_root, "lib64"))
+if isDir(sbsa_lib) then
+  prepend_path("LD_LIBRARY_PATH", sbsa_lib)
+end
+
+prepend_path("LD_LIBRARY_PATH",   pathJoin(nvhpc_root, "math_libs/lib64"))
+prepend_path("LD_LIBRARY_PATH",   pathJoin(nvhpc_root, "comm_libs/nccl/lib"))
+prepend_path("LD_LIBRARY_PATH",   pathJoin(nvhpc_root, "comm_libs/nvshmem/lib"))
+prepend_path("CPATH",             pathJoin(nvhpc_root, "math_libs/include"))
+prepend_path("CPATH",             pathJoin(nvhpc_root, "comm_libs/nccl/include"))
+prepend_path("CPATH",             pathJoin(nvhpc_root, "comm_libs/nvshmem/include"))
+
+local gcc_root = os.getenv("GCC_ROOT") or "/software/ella/software/2024.10/gcc-GCCVERSION"
+
+setenv("GCC_VERSION",   "GCCVERSION")
+setenv("GCC_ROOT",      gcc_root)
+setenv("GCC_PATH",      gcc_root)
+setenv("GCC_PREFIX",    gcc_root)
+
+setenv("CC",            pathJoin(gcc_root, "bin/gcc"))
+setenv("CXX",           pathJoin(gcc_root, "bin/g++"))
+setenv("FC",            pathJoin(gcc_root, "bin/gfortran"))
+setenv("F77",           pathJoin(gcc_root, "bin/gfortran"))
+setenv("F90",           pathJoin(gcc_root, "bin/gfortran"))
+setenv("CPP",           "cpp")
+
+prepend_path("PATH",              pathJoin(gcc_root, "bin"))
+prepend_path("MANPATH",           pathJoin(gcc_root, "share/man"))
+prepend_path("INFOPATH",          pathJoin(gcc_root, "share/info"))
+prepend_path("LIBRARY_PATH",      pathJoin(gcc_root, "lib"))
+prepend_path("LIBRARY_PATH",      pathJoin(gcc_root, "lib64"))
+prepend_path("LD_LIBRARY_PATH",   pathJoin(gcc_root, "lib"))
+prepend_path("LD_LIBRARY_PATH",   pathJoin(gcc_root, "lib64"))
+prepend_path("CPATH",             pathJoin(gcc_root, "include"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(gcc_root, "lib"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(gcc_root, "lib64"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(gcc_root, "include"))
+prepend_path("PKG_CONFIG_PATH",   pathJoin(gcc_root, "lib/pkgconfig"))
+prepend_path("LD_SO_CACHE",       pathJoin(gcc_root, "cache/ld.so.cache"))
+
+whatis("NVHPC root    : " .. (os.getenv("NVHPC_ROOT") or nvhpc_root))
+whatis("CUDA root     : " .. cuda_root)
+whatis("HPC-X module  : hpcx-mt-ompi")
+whatis("GCC toolchain : GCCVERSION")
+whatis("NVCC gencode  : " .. NVCC_GENCODE_FLAGS)
