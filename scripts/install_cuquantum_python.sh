@@ -2,51 +2,42 @@
 
 source settings.sh
 
-CUQUANTUM_PYTHON_VERSION=24.03.0
-CUPY_VERSION=13.2.0
-CUTENSOR_VERSION=2.0.1
-CUQUANTUM_VERSION=24.03.0
-
-module load hpcx-mt-ompi
-module load nvhpc/$NVHPC_VERSION
-module load gcc
-module load cuquantum/$CUQUANTUM_VERSION
-
-CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
-
-CUDA_PATH=$NVHPC_ROOT/cuda
-CC=$(which gcc)
-CXX=$(which g++)
-
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"
 do
 
-	module load py-$PYTHON_VERSION-cupy/$CUPY_VERSION
 
-	CUQUANTUM_PYTHON_INSTALL_PREFIX="$INSTALL_PREFIX/py-$PYTHON_VERSION-cuquantum-${CUQUANTUM_PYTHON_VERSION}"
+        py_major=$(echo "$PYTHON_VERSION" | cut -d. -f1)
+        py_minor=$(echo "$PYTHON_VERSION" | cut -d. -f2)
+
+        # Skip any version < 3.11
+        if (( py_major < 3 )) || (( py_major == 3 && py_minor < 11 )); then
+        	echo "Skipping Python $PYTHON_VERSION (requires >= 3.11)"
+    		continue
+     	fi
+
+
+	module purge
+	module load pawsey
+	module load PrgEnv/nvhpc-gcc-mpi/$NVHPC_VERSION
+	module load python/$PYTHON_VERSION
+	module load py-$PYTHON_VERSION-mpi4py/$MPI4PY_VERSION
+	python --version
+
+        CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
+        	CUQUANTUM_PYTHON_INSTALL_PREFIX="$INSTALL_PREFIX/py-$PYTHON_VERSION-cuquantum-${CUQUANTUM_PYTHON_VERSION}"
 	CUQUANTUM_PYTHON_MODULE_PREFIX="$MODULE_PREFIX/py-$PYTHON_VERSION-cuquantum"
+
+	mkdir -p $CUQUANTUM_PYTHON_INSTALL_PREFIX
 
 	PYTHONPATH=$CUQUANTUM_PYTHON_INSTALL_PREFIX/lib/python${PYTHON_VERSION:0:4}/site-packages:$PYTHONPATH
 	PATH=$CUQUANTUM_PYTHON_INSTALL_PREFIX/bin:$PATH
 
-	cd $BUILD_PREFIX
+	PYTHONUSERBASE=$CUQUANTUM_PYTHON_INSTALL_PREFIX python3 -m pip install -v --no-cache-dir --user nvmath-python[cu12-distributed]
+	PYTHONUSERBASE=$CUQUANTUM_PYTHON_INSTALL_PREFIX python3 -m pip install -v --no-cache-dir --user cuda-python[cu12]
 
-	rm -rf cuQuantum
-	git clone --branch=v$CUQUANTUM_PYTHON_VERSION https://github.com/NVIDIA/cuQuantum
-	cd cuQuantum/python
+	PYTHONUSERBASE=$CUQUANTUM_PYTHON_INSTALL_PREFIX python3 -m pip install -vv --no-cache-dir --user cuquantum-cu$CUDA_MAJOR_VERSION
+	PYTHONUSERBASE=$CUQUANTUM_PYTHON_INSTALL_PREFIX python3 -m pip install -vv --no-cache-dir --user cuquantum-python-cu$CUDA_MAJOR_VERSION
 	
-	# install prereqs
-	PYTHONUSERBASE=$CUQUANTUM_PYTHON_INSTALL_PREFIX python3 -m pip install \
-		-v --no-build-isolation --no-cache-dir --user \
-		"cython>=0.29.22,<3" \
-		"setuptools>=61.0.0" \
-		"pip>=21.3.1" \
-		"packaging==24.1" \
-		"numpy>=1.21,<2" \
-		"wheel>=0.34.0"
-	
-	##install cuquantum python
-	PYTHONUSERBASE=$CUQUANTUM_PYTHON_INSTALL_PREFIX python3 -m pip install -v --no-cache-dir --user --no-deps .
 
 	cd $BUILD_PREFIX
 	
@@ -54,6 +45,7 @@ do
 	cp $SETUP_PREFIX/modules/cuquantum_python_module $MODULE_TEMP_PATH
 	sed -i "s|CUQUANTUM_PYTHONVERSION|$CUQUANTUM_PYTHON_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUDAVERSION|$CUDA_MAJOR_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|GCCVERSION|$GCC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUPYVERSION|$CUPY_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUQUANTUMPYTHONROOT|$CUQUANTUM_PYTHON_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
@@ -64,13 +56,8 @@ do
 	mkdir -p $CUQUANTUM_PYTHON_MODULE_PREFIX
 	mv $MODULE_TEMP_PATH $CUQUANTUM_PYTHON_MODULE_PREFIX/.
 	
-	module unload py-$PYTHON_VERSION-cupy/$CUPY_VERSION
-	
+
 done
 
-module unload cuquantum/$CUQUANTUM_VERSION
-module unload gcc
-module unload nvhpc/$NVHPC_VERSION
-module unload hpcx-mt-ompi
-
-
+module purge
+module load pawsey
