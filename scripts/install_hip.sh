@@ -2,18 +2,14 @@
 
 source settings.sh
 
-ROCM_VERSION=6.1 # major.minor
-ROCM_FULL_VERSION=6.1.2 # major.minor.patch
-NVHPC_VERSION=24.5
-
 HIP_INSTALL_PREFIX="$INSTALL_PREFIX/hip-${ROCM_FULL_VERSION}"
 HIP_BUILD_PREFIX="$BUILD_PREFIX/hip"
 
-module load gcc
+module load gcc/$GCC_VERSION
 module load nvhpc/$NVHPC_VERSION
-module load cmake
+module load cmake/$CMAKE_VERSION
 
-ROCM_BRANCH=rocm-${ROCM_VERSION}.x
+ROCM_BRANCH=rocm-${ROCM_FULL_VERSION}
 
 # C and C++ compilers associated with the NVHPC default toolchain
 export CC=$(which gcc)
@@ -44,7 +40,7 @@ cd $HIP_BUILD_PREFIX
 # Reference: https://rocmdocs.amd.com/projects/HIP/en/latest/install/build.html
 git clone -b "$ROCM_BRANCH" https://github.com/ROCm/clr.git
 git clone -b "$ROCM_BRANCH" https://github.com/ROCm/hip.git
-# Required for NVIDIA platforms only
+## Required for NVIDIA platforms only
 git clone -b "$ROCM_BRANCH" https://github.com/ROCm/hipother.git
 
 export CLR_DIR="$(readlink -f clr)"
@@ -65,26 +61,25 @@ make -j$(nproc)
 make install
 
 export HIP_PLATFORM=nvidia
-export HIP_COMPILER=$CXX
+export HIP_COMPILER=nvcc
 export HIP_PATH=$HIP_INSTALL_PREFIX
 export PATH=$PATH:$HIP_INSTALL_PREFIX/bin
 
-cd $HIP_BUILD_PREFIX
-
-# Branch naming convention is different for the HIP repo
-export ROCM_BRANCH=release/rocm-rel-${ROCM_VERSION}
 
 # Function to clone, build, and install a HIP library with specific cmake options
 build_and_install() {
+    local repo_url=$1
+    shift
     local repo_name=$1
     shift
     local cmake_options=("$@")
 
-    git clone -b "$ROCM_BRANCH" "https://github.com/ROCmSoftwarePlatform/${repo_name}.git"
+    git clone --depth 1 -b "$ROCM_BRANCH" "${repo_url}"
     cd "$repo_name"
     cmake -B build -S . \
         -DCMAKE_INSTALL_PREFIX="$HIP_INSTALL_PREFIX" \
         -DCMAKE_PREFIX_PATH="$NVHPC_ROOT/math_libs/lib64" \
+        -DCMAKE_MODULE_PATH=$HIP_INSTALL_PREFIX/lib64/cmake/hip \
         "${cmake_options[@]}"
     cmake --build build
     cd build
@@ -92,25 +87,15 @@ build_and_install() {
     cd $HIP_BUILD_PREFIX
 }
 
-build_and_install "hipBLAS" -DCMAKE_MODULE_PATH=$HIP_INSTALL_PREFIX/lib64/cmake/hip
+build_and_install https://github.com/ROCm/hipBLAS-common hipBLAS-common
 
-build_and_install "hipSPARSE" -DUSE_CUDA=ON -DCMAKE_MODULE_PATH=$HIP_INSTALL_PREFIX/lib64/cmake/hip
+build_and_install https://github.com/ROCm/hipBLAS hipBLAS
 
-build_and_install "hipSOLVER" -DUSE_CUDA=ON -DCMAKE_MODULE_PATH=$HIP_INSTALL_PREFIX/lib64/cmake/hip -DHIP_ROOT_DIR=$HIP_INSTALL_PREFIX -DHIP_PLATFORM=nvidia -DCMAKE_CXX_FLAGS="-D__HIP_PLATFORM_NVIDIA__"
+build_and_install https://github.com/ROCm/hipSPARSE hipSPARSE -DUSE_CUDA=ON
 
-build_and_install "hipRAND" -DBUILD_WITH_LIB=CUDA -DCMAKE_MODULE_PATH=$HIP_INSTALL_PREFIX/lib64/cmake/hip
+build_and_install  https://github.com/ROCm/hipSOLVER hipSOLVER -DUSE_CUDA=ON -DHIP_ROOT_DIR=$HIP_INSTALL_PREFIX -DHIP_PLATFORM=nvidia -DCMAKE_CXX_FLAGS="-D__HIP_PLATFORM_NVIDIA__"
 
-# The hipFORT build process is broken when HIP_PLATFORM=nvidia
-# https://github.com/ROCm/hipfort/issues/154
-# Need to build for both amd and nvidia platforms.
-
-build_and_install "hipFORT" \
-        -DHIPFORT_COMPILER_FLAGS="-fallow-argument-mismatch -ffree-form -cpp -ffree-line-length-none -fmax-errors=5" \
-       -DHIPFORT_COMPILER=$FC \
-       -DHIPFORT_AR=$GCC_AR \
-       -DHIPFORT_RANLIB=$GCC_RANLIB \
-       -DHIP_PLATFORM=amd \
-       -DHIPFORT_INSTALL_PREFIX=$HIP_INSTALL_PREFIX
+build_and_install https://github.com/ROCm/hipRAND hipRAND -DBUILD_WITH_LIB=CUDA
 
 cd $HIP_BUILD_PREFIX/..
 rm -rf $HIP_BUILD_PREFIX
@@ -120,12 +105,13 @@ rm -rf $HIP_BUILD_PREFIX
 cd "$MODULE_TEMP_PREFIX"
 cp "$SETUP_PREFIX/modules/hip_module" "$ROCM_FULL_VERSION"
 
-sed -i "s|ROCM_HIP_VERSION|$ROCM_FULL_VERSION|g" "$ROCM_FULL_VERSION"
-sed -i "s|HOST_COMPILER|$CXX|g" "$ROCM_FULL_VERSION"
-sed -i "s|NVHPC_VERSION|$NVHPC_VERSION|g" "$ROCM_FULL_VERSION"
-sed -i "s|NVHPC_CUDA_PATH|$NVHPC_ROOT/cuda|g" "$ROCM_FULL_VERSION"
-sed -i "s|HOST_Fortran_COMPILER|$FC|g" "$ROCM_FULL_VERSION"
-sed -i "s|ROCM_BASE|$HIP_INSTALL_PREFIX|g" "$ROCM_FULL_VERSION"
+sed -i "s|ROCMHIPVERSION|$ROCM_FULL_VERSION|g" "$ROCM_FULL_VERSION"
+sed -i "s|GCCVERSION|$GCC_VERSION|g" "$ROCM_FULL_VERSION"
+sed -i "s|HOSTCOMPILER|$CXX|g" "$ROCM_FULL_VERSION"
+sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g" "$ROCM_FULL_VERSION"
+sed -i "s|NVHPCCUDAPATH|$NVHPC_ROOT/cuda|g" "$ROCM_FULL_VERSION"
+sed -i "s|HOSTFortranCOMPILER|$FC|g" "$ROCM_FULL_VERSION"
+sed -i "s|ROCMBASE|$HIP_INSTALL_PREFIX|g" "$ROCM_FULL_VERSION"
 
 mkdir -p "$MODULE_PREFIX/hip"
 mv "$ROCM_FULL_VERSION" "$MODULE_PREFIX/hip/$ROCM_FULL_VERSION.lua"
