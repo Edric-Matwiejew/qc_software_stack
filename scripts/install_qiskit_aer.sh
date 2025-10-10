@@ -2,16 +2,13 @@
 
 source settings.sh
 
-QISKIT_AER_VERSION=0.15
-CUPY_VERSION=13.2.0
-CUQUANTUM_VERSION=24.03.0
-
-module load gcc
-module load cmake
-module load ninja
+module load gcc/$GCC_VERSION
+module load cmake/$CMAKE_VERSION
+module load ninja/$NINJA_VERSION
 module load hpcx-mt-ompi
 module load nvhpc/$NVHPC_VERSION
 module load cuquantum/$CUQUANTUM_VERSION
+module load cutensor/$CUTENSOR_VERSION
 
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
 
@@ -34,10 +31,10 @@ do
 	git clone --depth 1 --branch=$QISKIT_AER_VERSION https://github.com/Qiskit/qiskit-aer
 	cd qiskit-aer
 
-	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall -vvv scikit-build>=0.11.0
-	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall -vv conan==1.65.0
-	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall -vv pybind11==2.13.4
-	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall -vv numpy==2.0.1
+	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall scikit-build>=0.11.0
+	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall conan==1.65.0
+	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall pybind11==2.13.4
+	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall numpy==2.0.1
 
 	export CONAN_USER_HOME=$BUILD_PREFIX/conan
 	mkdir $CONAN_USER_HOME
@@ -58,9 +55,11 @@ do
 	MODULE_TEMP_PATH="$BUILD_PREFIX/$QISKIT_AER_VERSION.lua"
 	cp $SETUP_PREFIX/modules/qiskit_aer_module $MODULE_TEMP_PATH
 	sed -i "s|QISKITAERVERSION|$QISKIT_AER_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|GCCVERSION|$GCC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUDAVERSION|$CUDA_MAJOR_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUQUANTUMVERSION|$CUQUANTUM_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|CUTENSORVERSION|$CUTENSOR_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|PYTHONVERSION_MAJOR_MINOR|${PYTHON_VERSION:0:4}|g" "$MODULE_TEMP_PATH"
 	sed -i "s|PYTHONVERSION|$PYTHON_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|QISKITAERROOT|$QISKIT_AER_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
