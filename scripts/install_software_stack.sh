@@ -10,6 +10,7 @@ source settings.sh
 bash scripts/install_gcc.sh
 bash scripts/install_perl.sh
 bash scripts/install_gcc_development_environment.sh
+bash scripts/install_prgenv.sh
 bash scripts/install_python.sh
 bash scripts/install_cmake.sh
 bash scripts/install_ninja.sh
