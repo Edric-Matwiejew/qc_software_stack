@@ -1,0 +1,48 @@
+-- -*- lua -*-
+help([[
+PennyLane Lightning (PLVARIANT) — a high-performance C++/CUDA simulator plugin for PennyLane.
+]])
+
+whatis("Name: PennyLane-Lightning-PLVARIANT PLVERSION")
+whatis("CUDA Version: CUDAVERSION")
+whatis("Documentation: https://docs.pennylane.ai/projects/lightning/")
+
+if not isloaded("nvhpc/NVHPCVERSION") then
+    load("nvhpc/NVHPCVERSION")
+end
+depends_on("nvhpc/NVHPCVERSION")
+
+if not isloaded("hpcx-mt-ompi") then
+    load("hpcx-mt-ompi")
+end
+depends_on("hpcx-mt-ompi")
+
+if not isloaded("gcc/GCCVERSION") then
+    load("gcc/GCCVERSION")
+end
+depends_on("gcc/GCCVERSION")
+
+if not isloaded("python/PYTHONVERSION") then
+    load("python/PYTHONVERSION")
+end
+depends_on("python/PYTHONVERSION")
+
+if not isloaded("cutensor/CUTENSORVERSION") then
+    load("cutensor/CUTENSORVERSION")
+end
+depends_on("cutensor/CUTENSORVERSION")
+
+if not isloaded("cuquantum/CUQUANTUMVERSION") then
+    load("cuquantum/CUQUANTUMVERSION")
+end
+depends_on("cuquantum/CUQUANTUMVERSION")
+
+local PENNYLANE_LIGHTNING_ROOT = "PLROOT"
+
+setenv("PENNYLANE_LIGHTNING_ROOT", PENNYLANE_LIGHTNING_ROOT)
+prepend_path("PATH",              pathJoin(PENNYLANE_LIGHTNING_ROOT, "bin"))
+prepend_path("LIBRARY_PATH",      pathJoin(PENNYLANE_LIGHTNING_ROOT, "lib/"))
+prepend_path("LD_LIBRARY_PATH",   pathJoin(PENNYLANE_LIGHTNING_ROOT, "lib/"))
+prepend_path("CPATH",             pathJoin(PENNYLANE_LIGHTNING_ROOT, "include/"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(PENNYLANE_LIGHTNING_ROOT, "lib/"))
+prepend_path("PYTHONPATH",        pathJoin(PENNYLANE_LIGHTNING_ROOT, "lib/pythonPYTHONVERSION_MAJOR_MINOR/site-packages"))

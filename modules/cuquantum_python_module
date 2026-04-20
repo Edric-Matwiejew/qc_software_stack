@@ -30,7 +30,7 @@ end
 depends_on("python/PYTHONVERSION")
 
 if not isloaded("cutensor/CUTENSORVERSION") then
-    load("python/CUTENSORVERSION")
+    load("cutensor/CUTENSORVERSION")
 end
 depends_on("cutensor/CUTENSORVERSION")
 

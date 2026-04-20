@@ -7,6 +7,11 @@ PERL_BUILD_PREFIX=$BUILD_PREFIX/perl-$PERL_VERSION
 mkdir -p $PERL_BUILD_PREFIX
 
 PERL_INSTALL_PREFIX=$INSTALL_PREFIX/perl-$PERL_VERSION
+
+if [[ -f "$PERL_INSTALL_PREFIX/bin/perl" ]]; then
+    echo "Perl $PERL_VERSION already installed. Skipping."
+    exit 0
+fi
 mkdir -p $PERL_INSTALL_PREFIX
 
 PERL_MODULE_PREFIX=$MODULE_PREFIX/perl

@@ -43,8 +43,12 @@ do
 	CUPY_INSTALL_PREFIX="$INSTALL_PREFIX/py-$PYTHON_VERSION-cupy-$CUPY_VERSION"
 	CUPY_MODULE_PREFIX="$MODULE_PREFIX/py-$PYTHON_VERSION-cupy"
 
+	if [[ -d "$CUPY_INSTALL_PREFIX" ]]; then
+		echo "CuPy $CUPY_VERSION for Python $PYTHON_VERSION already installed. Skipping."
+		continue
+	fi
+
 	module load python/$PYTHON_VERSION
-	# Install CuPy
 	mkdir -p $CUPY_INSTALL_PREFIX
 	
 	rm -rf cupy

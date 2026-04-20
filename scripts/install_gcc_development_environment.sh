@@ -11,6 +11,11 @@ fi
 # Build tools installed with the default GCC
 export BUILD_TOOLS_INSTALL_PREFIX="$INSTALL_PREFIX/gcc-$GCC_VERSION"
 export BUILD_TOOLS_BUILD_PREFIX="$BUILD_PREFIX/gnu-build-tools"
+if [[ -f "$BUILD_TOOLS_INSTALL_PREFIX/bin/autoconf" ]]; then
+    echo "GCC development environment already installed. Skipping."
+    exit 0
+fi
+
 rm -rf "$BUILD_TOOLS_BUILD_PREFIX" && mkdir -p "$BUILD_TOOLS_BUILD_PREFIX" && cd "$BUILD_TOOLS_BUILD_PREFIX" || { echo "Failed to create build directory"; exit 1; }
 
 mkdir -p "$BUILD_TOOLS_INSTALL_PREFIX/bin" "$BUILD_TOOLS_INSTALL_PREFIX/lib" "$BUILD_TOOLS_INSTALL_PREFIX/include"
