@@ -9,14 +9,24 @@ NVHPC_YEAR_FULL="20${NVHPC_YEAR}"
 NVHPC_TAG="${NVHPC_YEAR}${NVHPC_MINOR}"
 
 NVHPC_INSTALL_PREFIX=$INSTALL_PREFIX/nvhpc-${NVHPC_VERSION}
-NVHPC_MODULE_DIR=$MODULE_PREFIX/nvhpc
-NVHPC_CUDA_VERSION=13.1
+# The multi-CUDA archive bundles both CUDA 12.x and CUDA 13.x under one NVHPC
+# install. NVIDIA's installer generates variant module files
+# (nvhpc-nompi-cuda12, nvhpc-hpcx-cuda13, etc.) that we expose via symlink below.
+NVHPC_CUDA_VERSION=multi
 NVHPC_ARCHIVE=nvhpc_${NVHPC_YEAR_FULL}_${NVHPC_TAG}_${NVHPC_ARCH}_cuda_${NVHPC_CUDA_VERSION}
 
 if [[ -d "$NVHPC_INSTALL_PREFIX/${NVHPC_ARCH}/${NVHPC_VERSION}" ]]; then
     echo "NVHPC ${NVHPC_VERSION} already installed at ${NVHPC_INSTALL_PREFIX}. Skipping."
 else
     echo "Installing NVHPC ${NVHPC_VERSION}..."
+    # BUILD_PREFIX is per-node /tmp; a previous run as a different user can leave
+    # it owned by someone else. Fail loudly instead of getting Permission denied
+    # halfway through the 14 GB download.
+    mkdir -p "$BUILD_PREFIX" 2>/dev/null
+    if [ ! -w "$BUILD_PREFIX" ]; then
+        echo "ERROR: $BUILD_PREFIX is not writable by $(id -un) (owner=$(stat -c '%U' "$BUILD_PREFIX" 2>/dev/null)). Clean it on this node and re-run." >&2
+        exit 1
+    fi
     cd $BUILD_PREFIX
 
     NVHPC_URL="https://developer.download.nvidia.com/hpc-sdk/${NVHPC_VERSION}/${NVHPC_ARCHIVE}.tar.gz"
@@ -41,16 +51,22 @@ else
         PIDS+=($!)
     done
 
-    # Wait for all chunks
-    for PID in "${PIDS[@]}"; do
-        wait $PID
+    # Poll the chunk sizes every 30s while downloads are in flight, so the
+    # slurm log shows progress instead of a 5-15 min silent gap.
+    while kill -0 "${PIDS[@]}" 2>/dev/null; do
+        sleep 30
+        DONE=$(du -bc part_* 2>/dev/null | tail -1 | awk '{print $1}')
+        [ -n "$DONE" ] && printf '  ... %d / %d MB (%d%%)\n' \
+            $((DONE/1024/1024)) $((FILESIZE/1024/1024)) $((DONE * 100 / FILESIZE))
     done
+    wait "${PIDS[@]}"
 
-    # Merge chunks
+    echo "Merging chunks and extracting..."
     cat $(seq 0 $(( NTHREADS - 1 )) | sed 's/^/part_/') > ${NVHPC_ARCHIVE}.tar.gz
     rm -f part_*
 
     tar -xzf ${NVHPC_ARCHIVE}.tar.gz
+    echo "Running NVIDIA installer..."
 
     # Auto-answer installer prompts:
     # 1. Enter to continue past header
@@ -63,66 +79,7 @@ else
     rm -rf ${NVHPC_ARCHIVE}.tar.gz ${NVHPC_ARCHIVE}
 fi
 
-# Derive CUDA version from the installed nvcc
-NVCC_BIN=$NVHPC_INSTALL_PREFIX/${NVHPC_ARCH}/${NVHPC_VERSION}/compilers/bin/nvcc
-CUDA_MAJOR_VERSION=$($NVCC_BIN --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
-
-# Create Lua module file that mirrors the system nvhpc module structure
-mkdir -p $NVHPC_MODULE_DIR
-MODULE_PATH=$NVHPC_MODULE_DIR/${NVHPC_VERSION}.lua
-
-cat > $MODULE_PATH << EOF
--- -*- lua -*-
-help([[
-NVIDIA HPC SDK ${NVHPC_VERSION} with CUDA ${CUDA_MAJOR_VERSION}
-Installed at ${NVHPC_INSTALL_PREFIX}
-]])
-
-whatis("Name: NVHPC ${NVHPC_VERSION}")
-whatis("CUDA Version: ${CUDA_MAJOR_VERSION}")
-
-conflict("nvhpc")
-
-local nvhome    = "${NVHPC_INSTALL_PREFIX}"
-local target    = "${NVHPC_ARCH}"
-local version   = "${NVHPC_VERSION}"
-
-local nvroot    = pathJoin(nvhome, target, version)
-local nvcudadir = pathJoin(nvroot, "cuda")
-local nvcompdir = pathJoin(nvroot, "compilers")
-local nvmathdir = pathJoin(nvroot, "math_libs")
-local nvcommdir = pathJoin(nvroot, "comm_libs")
-
-setenv("NVHPC",      nvhome)
-setenv("NVHPC_ROOT", nvroot)
-setenv("CC",         pathJoin(nvcompdir, "bin/nvc"))
-setenv("CXX",        pathJoin(nvcompdir, "bin/nvc++"))
-setenv("FC",         pathJoin(nvcompdir, "bin/nvfortran"))
-setenv("F90",        pathJoin(nvcompdir, "bin/nvfortran"))
-setenv("F77",        pathJoin(nvcompdir, "bin/nvfortran"))
-
-prepend_path("PATH", pathJoin(nvcudadir, "bin"))
-prepend_path("PATH", pathJoin(nvcompdir, "bin"))
-prepend_path("PATH", pathJoin(nvcompdir, "extras/qd/bin"))
-
-prepend_path("LD_LIBRARY_PATH", pathJoin(nvcudadir, "lib64"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(nvcompdir, "lib"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(nvcompdir, "extras/qd/lib"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(nvmathdir, "lib64"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(nvcommdir, "nccl/lib"))
-prepend_path("LD_LIBRARY_PATH", pathJoin(nvcommdir, "nvshmem/lib"))
-
-prepend_path("CPATH", pathJoin(nvmathdir, "include"))
-prepend_path("CPATH", pathJoin(nvcommdir, "nccl/include"))
-prepend_path("CPATH", pathJoin(nvcommdir, "nvshmem/include"))
-prepend_path("CPATH", pathJoin(nvcompdir, "extras/qd/include/qd"))
-
-prepend_path("LIBRARY_PATH", pathJoin(nvcudadir, "lib64"))
-prepend_path("LIBRARY_PATH", pathJoin(nvmathdir, "lib64"))
-
-prepend_path("MANPATH", pathJoin(nvcompdir, "man"))
-prepend_path("CMAKE_PREFIX_PATH", pathJoin(nvcudadir))
-prepend_path("CMAKE_PREFIX_PATH", pathJoin(nvmathdir))
-EOF
-
-echo "NVHPC ${NVHPC_VERSION} module written to ${MODULE_PATH}"
+# NVIDIA's installer generated <prefix>/modulefiles/{nvhpc,nvhpc-nompi,
+# nvhpc-hpcx,nvhpc-*-cuda12,nvhpc-*-cuda13,...}/26.3. They're added to
+# MODULEPATH by settings.sh; nothing to write here.
+echo "NVHPC ${NVHPC_VERSION} modules available at ${NVHPC_INSTALL_PREFIX}/modulefiles"

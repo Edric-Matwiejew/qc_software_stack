@@ -76,6 +76,17 @@ done
 #         srun -N 1 -n 1 --gpus=1 --mem=0 --export=ALL python tests/test_cudaq.py
 # done
 
+for PYVER in "${PYTHON_VERSIONS[@]}"; do
+    run_test "PyTorch (single-rank)" "py-${PYVER}-pytorch/${PYTORCH_VERSION}" \
+        srun -N 1 -n 1 --gpus=1 --mem=0 --export=ALL python tests/test_pytorch.py
+done
+
+for PYVER in "${PYTHON_VERSIONS[@]}"; do
+    run_test "PyTorch (MPI 2-rank NCCL)" "py-${PYVER}-pytorch/${PYTORCH_VERSION}" \
+        srun -N 2 --ntasks-per-node=1 --gpus-per-node=1 --mem=0 --mpi=pmix --export=ALL \
+        bash -lc "module load py-${PYVER}-mpi4py/${MPI4PY_VERSION} && python tests/test_pytorch.py"
+done
+
 # variant_id | PL device name | needs GPU | needs MPI
 PL_VARIANTS=(
     "kokkos-omp|lightning.kokkos|0|0"

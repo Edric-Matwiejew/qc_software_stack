@@ -60,7 +60,7 @@ do
 	sed -i "s|PYTHONVERSION|$PYTHON_VERSION|g" "$MODULE_TEMP_PATH"
 	# Template has no CUQUANTUMVERSION placeholder — cuquantum-python wheel
 	# ships its own shared libs and doesn't load() a C SDK module.
-	sed -i "s|CUTENSORVERSION|$CUTENSOR_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|CUTENSORVERSION|$CUQUANTUM_PYTHON_CUTENSOR_VERSION|g" "$MODULE_TEMP_PATH"
 	mkdir -p $CUQUANTUM_PYTHON_MODULE_PREFIX
 	mv $MODULE_TEMP_PATH $CUQUANTUM_PYTHON_MODULE_PREFIX/.
 	

@@ -13,7 +13,7 @@ module load cmake/$CMAKE_VERSION
 module load ninja/$NINJA_VERSION
 module load hpcx-mt-ompi
 module load nvhpc/$NVHPC_VERSION
-module load cutensor/$CUTENSOR_VERSION
+module load cutensor/$PENNYLANE_LIGHTNING_CUTENSOR_VERSION
 module load cuquantum/$PENNYLANE_LIGHTNING_CUQUANTUM_VERSION
 
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
@@ -124,7 +124,7 @@ do
         sed -i "s|CUDAVERSION|$CUDA_MAJOR_VERSION|g"             "$MODULE_TEMP_PATH"
         sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g"                 "$MODULE_TEMP_PATH"
         sed -i "s|CUQUANTUMVERSION|$PENNYLANE_LIGHTNING_CUQUANTUM_VERSION|g"  "$MODULE_TEMP_PATH"
-        sed -i "s|CUTENSORVERSION|$CUTENSOR_VERSION|g"           "$MODULE_TEMP_PATH"
+        sed -i "s|CUTENSORVERSION|$PENNYLANE_LIGHTNING_CUTENSOR_VERSION|g" "$MODULE_TEMP_PATH"
         sed -i "s|PYTHONVERSION_MAJOR_MINOR|$PY_MM|g"            "$MODULE_TEMP_PATH"
         sed -i "s|PYTHONVERSION|$PYTHON_VERSION|g"               "$MODULE_TEMP_PATH"
         sed -i "s|PLROOT|$PL_INSTALL_PREFIX|g"                   "$MODULE_TEMP_PATH"
@@ -144,7 +144,7 @@ do
 done
 
 module unload cuquantum/$PENNYLANE_LIGHTNING_CUQUANTUM_VERSION
-module unload cutensor/$CUTENSOR_VERSION
+module unload cutensor/$PENNYLANE_LIGHTNING_CUTENSOR_VERSION
 module unload nvhpc/$NVHPC_VERSION
 module unload hpcx-mt-ompi
 module unload ninja/$NINJA_VERSION

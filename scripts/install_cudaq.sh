@@ -26,13 +26,20 @@ export CUQUANTUM_INSTALL_PREFIX=$CUQUANTUM_ROOT
 export CUTENSOR_INSTALL_PREFIX=$CUTENSOR_ROOT
 export PERL_INSTALL_PREFIX=$PERL_ROOT
 
-CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1] "." a[2]}')
+# Force CUDA 12.9 (not nvhpc's default 13.1). cuda-q 0.14's new AOT pipeline
+# has aarch64 memory corruption on CUDA 13 that manifests as `realloc(): invalid
+# pointer` during compile_to_mlir; NVIDIA's own CI only validates cuda-q on 12.x.
+CUDA_MAJOR_MINOR_VERSION=12.9
 # The versioned cuda/<ver>/ subdir is required; NVHPC's compilers/bin/nvcc wrapper
 # makes FindCUDAToolkit resolve to a non-existent cuda/targets/sbsa-linux/ path.
 export CUDA_HOME=$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION
-export CUDA_PATH=$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION
-export CUDACXX=$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION/bin/nvcc
-export CUDAToolkit_ROOT=$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION
+export CUDA_PATH=$CUDA_HOME
+export CUDACXX=$CUDA_HOME/bin/nvcc
+export CUDAToolkit_ROOT=$CUDA_HOME
+# Prepend so unqualified `nvcc` in child CMake / make calls resolves to 12.9.
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$NVHPC_ROOT/math_libs/$CUDA_MAJOR_MINOR_VERSION/lib64:$LD_LIBRARY_PATH
+export CPATH=$CUDA_HOME/include:$NVHPC_ROOT/math_libs/$CUDA_MAJOR_MINOR_VERSION/include:$CPATH
 
 ulimit -n 10000   # CUDA-Q build opens thousands of files during LLVM link
 
@@ -136,29 +143,51 @@ do
 	python -m pip install $PIP_FLAGS "pytest"
 	
         if [[ ! -d cuda-quantum ]]; then
-	    git clone -b $CUDA_QUANTUM_VERSION --depth 1 https://github.com/NVIDIA/cuda-quantum
+	    # CUDA_QUANTUM_GIT_REF is either a release tag (e.g. 0.12.0, 0.14.0) or
+	    # a branch (e.g. main). --recurse-submodules brings in vendored
+	    # pybind11 (and on main, nanobind) that the CMakeLists expect.
+	    git clone --depth 1 --recurse-submodules -b "$CUDA_QUANTUM_GIT_REF" https://github.com/NVIDIA/cuda-quantum
+	    CUDAQ_BUILD_SHA=$(git -C cuda-quantum rev-parse --short HEAD)
+	    echo "cuda-q ${CUDA_QUANTUM_VERSION}: ${CUDA_QUANTUM_GIT_REF} @ ${CUDAQ_BUILD_SHA}"
 
-	    # Make upstream's *_INSTALL_PREFIX exports conditional so our values survive
-	    # `source configure_build.sh`.
-	    sed -Ei '/^export [A-Z_]+_INSTALL_PREFIX=/ s|^export ([A-Z_]+)=(.*)$|export \1=${\1:-\2}|' cuda-quantum/scripts/configure_build.sh
+	    # Source-tree patches. Each one is version-guarded (grep -q) so the
+	    # same script works across 0.12 / 0.14 / main — older releases simply
+	    # skip patches whose target file or pattern isn't present.
 
-	    # aarch64 RHEL's GNUInstallDirs defaults curl to lib64/, but both the skip
-	    # check and the main build look for lib/libcurl.a.
-	    sed -i 's|-DCMAKE_INSTALL_PREFIX="$CURL_INSTALL_PREFIX"|-DCMAKE_INSTALL_PREFIX="$CURL_INSTALL_PREFIX" -DCMAKE_INSTALL_LIBDIR=lib|' cuda-quantum/scripts/install_prerequisites.sh
+	    # P1: make upstream's *_INSTALL_PREFIX exports conditional so our values
+	    # survive `source configure_build.sh`. (All versions.)
+	    _F=cuda-quantum/scripts/configure_build.sh
+	    if [ -f "$_F" ] && grep -qE '^export [A-Z_]+_INSTALL_PREFIX=' "$_F"; then
+	        sed -Ei '/^export [A-Z_]+_INSTALL_PREFIX=/ s|^export ([A-Z_]+)=(.*)$|export \1=${\1:-\2}|' "$_F"
+	    fi
 
-	    # CUDAToolkit_INCLUDE_DIRS is a list; upstream's `${VAR}/cccl` only appends
-	    # /cccl to the last entry. Use list(TRANSFORM ... APPEND) instead.
-	    sed -i '/find_package(CUDAToolkit REQUIRED)/a\
+	    # P2: aarch64 RHEL's GNUInstallDirs defaults curl to lib64/; the build
+	    # looks for lib/libcurl.a. (0.14 / main; 0.12 structure differs.)
+	    _F=cuda-quantum/scripts/install_prerequisites.sh
+	    if [ -f "$_F" ] && grep -q 'DCMAKE_INSTALL_PREFIX="\$CURL_INSTALL_PREFIX"' "$_F"; then
+	        sed -i 's|-DCMAKE_INSTALL_PREFIX="$CURL_INSTALL_PREFIX"|-DCMAKE_INSTALL_PREFIX="$CURL_INSTALL_PREFIX" -DCMAKE_INSTALL_LIBDIR=lib|' "$_F"
+	    fi
+
+	    # P3: CUDAToolkit_INCLUDE_DIRS is a list; `${VAR}/cccl` only appends
+	    # /cccl to the last entry. (0.14+ / main; 0.12 doesn't reference /cccl.)
+	    _F=cuda-quantum/runtime/nvqir/custatevec/CMakeLists.txt
+	    if [ -f "$_F" ] && grep -q '\${CUDAToolkit_INCLUDE_DIRS}/cccl' "$_F"; then
+	        sed -i '/find_package(CUDAToolkit REQUIRED)/a\
 set(_CUDAToolkit_CCCL_INCLUDE_DIRS "${CUDAToolkit_INCLUDE_DIRS}")\
-list(TRANSFORM _CUDAToolkit_CCCL_INCLUDE_DIRS APPEND "/cccl")' cuda-quantum/runtime/nvqir/custatevec/CMakeLists.txt
-	    sed -i 's|\${CUDAToolkit_INCLUDE_DIRS}/cccl|\${_CUDAToolkit_CCCL_INCLUDE_DIRS}|g' cuda-quantum/runtime/nvqir/custatevec/CMakeLists.txt
+list(TRANSFORM _CUDAToolkit_CCCL_INCLUDE_DIRS APPEND "/cccl")' "$_F"
+	        sed -i 's|\${CUDAToolkit_INCLUDE_DIRS}/cccl|\${_CUDAToolkit_CCCL_INCLUDE_DIRS}|g' "$_F"
+	    fi
 
-	    # install(EXPORT) CheckInterfaceDirs rejects source-tree paths that leak in
-	    # transitively from LLVM/MLIR. Clamp to install-interface only.
-	    sed -i '/^install(TARGETS \${LIBRARY_NAME} EXPORT cudaq-targets/i\
+	    # P4: install(EXPORT cudaq-targets) CheckInterfaceDirs rejects source-tree
+	    # paths leaking in transitively from LLVM/MLIR. (0.14+ / main; in 0.12 the
+	    # runtime/cudaq/CMakeLists.txt file isn't present.)
+	    _F=cuda-quantum/runtime/cudaq/CMakeLists.txt
+	    if [ -f "$_F" ] && grep -q 'install(TARGETS \${LIBRARY_NAME} EXPORT cudaq-targets' "$_F"; then
+	        sed -i '/^install(TARGETS \${LIBRARY_NAME} EXPORT cudaq-targets/i\
 set_target_properties(${LIBRARY_NAME} PROPERTIES\
     INTERFACE_INCLUDE_DIRECTORIES "$<INSTALL_INTERFACE:include>")\
-' cuda-quantum/runtime/cudaq/CMakeLists.txt
+' "$_F"
+	    fi
 
         fi
 
