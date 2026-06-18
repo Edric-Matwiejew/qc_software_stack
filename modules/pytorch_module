@@ -1,0 +1,44 @@
+-- -*- lua -*-
+help([[
+PyTorch PYTORCHVERSION built from source against NVHPC NVHPCVERSION (CUDA CUDAVERSION)
+for Hopper (compute capability 9.0). NCCL via NVHPC comm_libs; cuDNN disabled.
+]])
+
+whatis("Name: PyTorch PYTORCHVERSION")
+whatis("CUDA Version: CUDAVERSION")
+whatis("Documentation: https://pytorch.org/docs/")
+
+family("pytorch")
+
+if not isloaded("gcc/GCCVERSION") then
+    load("gcc/GCCVERSION")
+end
+depends_on("gcc/GCCVERSION")
+
+if not isloaded("nvhpc/NVHPCVERSION") then
+    load("nvhpc/NVHPCVERSION")
+end
+depends_on("nvhpc/NVHPCVERSION")
+
+if not isloaded("cudnn/CUDNNVERSION") then
+    load("cudnn/CUDNNVERSION")
+end
+depends_on("cudnn/CUDNNVERSION")
+
+if not isloaded("hpcx-mt-ompi") then
+    load("hpcx-mt-ompi")
+end
+depends_on("hpcx-mt-ompi")
+
+if not isloaded("python/PYTHONVERSION") then
+    load("python/PYTHONVERSION")
+end
+depends_on("python/PYTHONVERSION")
+
+local PYTORCH_ROOT = "PYTORCHROOT"
+
+setenv("PYTORCH_ROOT", PYTORCH_ROOT)
+prepend_path("PATH",            pathJoin(PYTORCH_ROOT, "bin"))
+prepend_path("PYTHONPATH",      pathJoin(PYTORCH_ROOT, "lib/pythonPYTHONVERSION_MAJOR_MINOR/site-packages"))
+prepend_path("LD_LIBRARY_PATH", pathJoin(PYTORCH_ROOT, "lib/pythonPYTHONVERSION_MAJOR_MINOR/site-packages/torch/lib"))
+prepend_path("CMAKE_PREFIX_PATH", pathJoin(PYTORCH_ROOT, "lib/pythonPYTHONVERSION_MAJOR_MINOR/site-packages/torch/share/cmake"))

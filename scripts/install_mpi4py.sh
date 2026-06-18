@@ -3,8 +3,8 @@
 source settings.sh
 
 
-module load cmake
-module load ninja
+module load cmake/$CMAKE_VERSION
+module load ninja/$NINJA_VERSION
 module load nvhpc/$NVHPC_VERSION
 module load hpcx-mt-ompi
 module load gcc
@@ -21,6 +21,11 @@ do
 
 	MPI4PY_INSTALL_PREFIX="$INSTALL_PREFIX/py-$PYTHON_VERSION-mpi4py-${MPI4PY_VERSION}"
 	MPI4PY_MODULE_PREFIX="$MODULE_PREFIX/py-$PYTHON_VERSION-mpi4py"
+
+	if [[ -d "$MPI4PY_INSTALL_PREFIX" ]]; then
+		echo "mpi4py $MPI4PY_VERSION for Python $PYTHON_VERSION already installed. Skipping."
+		continue
+	fi
 
 	PYTHONPATH=$MPI4PY_INSTALL_PREFIX/lib/python${PYTHON_VERSION:0:4}/site-packages:$PYTHONPATH
 	PATH=$MPI4PY_INSTALL_PREFIX/bin:$PATH

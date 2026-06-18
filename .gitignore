@@ -1,0 +1,43 @@
+# Claude Code
+CLAUDE.md
+.claude/
+.claude.json
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Logs and job output
+*.log
+slurm-*.out
+slurm-*.err
+
+# Build / temporary artifacts
+build/
+dist/
+tmp/
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.tgz
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Backup files
+*.bak
+*.orig

@@ -9,6 +9,11 @@ SPACK_INSTALL_PREFIX="$INSTALL_PREFIX/spack-${SPACK_VERSION}"
 SPACK_MODULE_PREFIX="$MODULE_PREFIX/spack"
 USER_SPACK_PATH="software/$SYSTEM/$DATE_TAG/spack-$SPACK_VERSION"
 
+if [[ -d "$SPACK_INSTALL_PREFIX" ]]; then
+    echo "Spack $SPACK_VERSION already installed. Skipping."
+    exit 0
+fi
+
 # Clean up any existing installation
 rm -rf "$SPACK_INSTALL_PREFIX"
 

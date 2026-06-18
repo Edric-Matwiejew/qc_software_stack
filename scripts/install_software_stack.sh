@@ -7,6 +7,7 @@ fi
 
 source settings.sh
 
+bash scripts/install_nvhpc.sh
 bash scripts/install_gcc.sh
 bash scripts/install_perl.sh
 bash scripts/install_gcc_development_environment.sh
@@ -16,11 +17,13 @@ bash scripts/install_cmake.sh
 bash scripts/install_ninja.sh
 bash scripts/install_cutensor.sh
 bash scripts/install_cuquantum.sh
-bash scripts/install_cudaq.sh
+# bash scripts/install_cudaq.sh   # disabled — see settings.sh CUDA_QUANTUM_VERSION
 bash scripts/install_cupy.sh
 bash scripts/install_mpi4py.sh
 bash scripts/install_cuquantum_python.sh
 bash scripts/install_qiskit_aer.sh
+bash scripts/install_pennylane_lightning.sh
+bash scripts/install_pytorch.sh
 bash scripts/install_julia.sh
 bash scripts/install_bloqade_julia.sh
 bash scripts/install_spack.sh

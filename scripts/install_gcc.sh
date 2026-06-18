@@ -12,6 +12,11 @@ mkdir -p $TMPDIR
 export CC=$HOST_CC
 export CXX=$HOST_CXX
 
+if [[ -d "$GCC_INSTALL_PREFIX" ]]; then
+    echo "GCC $GCC_VERSION already installed. Skipping."
+    exit 0
+fi
+
 cd $BUILD_PREFIX
 wget https://ftp.gnu.org/gnu/gcc/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.gz
 tar -I pigz -xf gcc-$GCC_VERSION.tar.gz

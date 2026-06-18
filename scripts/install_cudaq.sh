@@ -1,11 +1,22 @@
+# Strip the auto-loaded 2024.10 stack so the LLVM link step can't pick up
+# /software/ella/2024.10/gcc-13.3.0/lib/libstdc++ via ld.so.cache.
+module unload pawseyenv 2>/dev/null || true
+module unuse /software/ella/2024.10 2>/dev/null || true
+unset GCC_PATH LD_SO_CACHE __LMOD_REF_COUNT_LD_SO_CACHE PYTHONPATH PYTHONUSERBASE
+for v in LD_LIBRARY_PATH PATH CPATH LIBRARY_PATH PKG_CONFIG_PATH CMAKE_PREFIX_PATH MANPATH; do
+    if [ -n "${!v}" ]; then
+        export "$v"="$(printf '%s' "${!v}" | tr ':' '\n' | grep -v '/software/ella/2024\.10\|/software/ella/software/2024\.10' | grep -v '^$' | paste -sd:)"
+    fi
+done
+
 source settings.sh
 
-module load cmake
-module load ninja
+module load cmake/$CMAKE_VERSION
+module load ninja/$NINJA_VERSION
 module load nvhpc/$NVHPC_VERSION
 module load gcc/$GCC_VERSION 
 module load hpcx-mt-ompi
-module load cuquantum/$CUQUANTUM_VERSION
+module load cuquantum/$CUDA_QUANTUM_CUQUANTUM_VERSION
 
 export CC=$(which gcc)
 export CXX=$(which g++)
@@ -15,26 +26,39 @@ export CUQUANTUM_INSTALL_PREFIX=$CUQUANTUM_ROOT
 export CUTENSOR_INSTALL_PREFIX=$CUTENSOR_ROOT
 export PERL_INSTALL_PREFIX=$PERL_ROOT
 
-CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1] "." a[2]}')
-export CUDA_HOME=$NVHPC_ROOT/cuda
-export CUDA_PATH=$NVHPC_ROOT/cuda
-export CUDACXX=$NVHPC_ROOT/compilers/bin/nvcc
-		
-# increase maximum open files limit
-# required for CudaQ build
-ulimit -n 10000
+# Force CUDA 12.9 (not nvhpc's default 13.1). cuda-q 0.14's new AOT pipeline
+# has aarch64 memory corruption on CUDA 13 that manifests as `realloc(): invalid
+# pointer` during compile_to_mlir; NVIDIA's own CI only validates cuda-q on 12.x.
+CUDA_MAJOR_MINOR_VERSION=12.9
+# The versioned cuda/<ver>/ subdir is required; NVHPC's compilers/bin/nvcc wrapper
+# makes FindCUDAToolkit resolve to a non-existent cuda/targets/sbsa-linux/ path.
+export CUDA_HOME=$NVHPC_ROOT/cuda/$CUDA_MAJOR_MINOR_VERSION
+export CUDA_PATH=$CUDA_HOME
+export CUDACXX=$CUDA_HOME/bin/nvcc
+export CUDAToolkit_ROOT=$CUDA_HOME
+# Prepend so unqualified `nvcc` in child CMake / make calls resolves to 12.9.
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$NVHPC_ROOT/math_libs/$CUDA_MAJOR_MINOR_VERSION/lib64:$LD_LIBRARY_PATH
+export CPATH=$CUDA_HOME/include:$NVHPC_ROOT/math_libs/$CUDA_MAJOR_MINOR_VERSION/include:$CPATH
+
+ulimit -n 10000   # CUDA-Q build opens thousands of files during LLVM link
 
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"
 do
 	module load python/$PYTHON_VERSION
 	
 	CUDA_QUANTUM_BUILD_PREFIX=$BUILD_PREFIX/py-$PYTHON_VERSION-cudaq-${CUDA_QUANTUM_VERSION}
-	mkdir -p $CUDA_QUANTUM_BUILD_PREFIX
-	
 	CUDA_QUANTUM_INSTALL_PREFIX=$INSTALL_PREFIX/py-$PYTHON_VERSION-cudaq-${CUDA_QUANTUM_VERSION}
-	mkdir -p $CUDA_QUANTUM_INSTALL_PREFIX
-	
 	CUDAQ_MODULE_PREFIX=$MODULE_PREFIX/py-$PYTHON_VERSION-cudaq
+
+	if [[ -f "$CUDA_QUANTUM_INSTALL_PREFIX/cudaq/bin/nvq++" ]]; then
+		echo "CUDA-Q $CUDA_QUANTUM_VERSION for Python $PYTHON_VERSION already installed. Skipping."
+		module unload python/$PYTHON_VERSION
+		continue
+	fi
+
+	mkdir -p $CUDA_QUANTUM_BUILD_PREFIX
+	mkdir -p $CUDA_QUANTUM_INSTALL_PREFIX
 	mkdir -p $CUDAQ_MODULE_PREFIX
 
 	CUDA_QUANTUM_PYTHON_INSTALL_PREFIX=$CUDA_QUANTUM_INSTALL_PREFIX/python
@@ -65,8 +89,7 @@ do
 	cd $CUDA_QUANTUM_BUILD_PREFIX
 	echo $CUDA_QUANTUM_BUILD_PREFIX
 
-	# Install Zlib as it is required for the OpenSSL build.
-	# [Zlib] Needed to build LLVM with zlib support (used by linker)
+	# libz is needed by both the LLVM linker and the OpenSSL build below.
 	if [ ! -f "$ZLIB_INSTALL_PREFIX/lib/libz.a" ]; then
 	  echo "Installing libz..."
 	  wget https://github.com/madler/zlib/releases/download/v1.3/zlib-1.3.tar.gz
@@ -85,9 +108,8 @@ do
 	fi
 
 	cd $CUDA_QUANTUM_BUILD_PREFIX
-	# Installing OpenSSL using a modified version of the cuda-quantum script
-	# to avoid installing Perl to $HOME.
-	# [OpenSSL] Needed for communication with external services
+	# OpenSSL, inlined from cuda-quantum's install_prerequisites.sh so Perl
+	# doesn't get installed to $HOME.
 	if [ -n "$OPENSSL_INSTALL_PREFIX" ]; then
 	  if [ ! -d "$OPENSSL_INSTALL_PREFIX" ] || [ -z "$(find "$OPENSSL_INSTALL_PREFIX" -name libssl.a)" ]; then
 	
@@ -108,26 +130,72 @@ do
 
 	cd $CUDA_QUANTUM_BUILD_PREFIX
 	
-	## Numpy required for LLVM build
-	python -m pip install -v --no-cache-dir "numpy<=1.26.4"
-	python -m pip install -v --no-cache-dir  "pybind11"
-	python -m pip install -v --no-cache-dir "pytest<=8.3.2"
-	python -m pip install -v --no-cache-dir "fastapi<=0.112.2"
-	python -m pip install -v --no-cache-dir "uvicorn<=0.30.6"
-	python -m pip install -v --no-cache-dir "llvmlite<=0.43.0"
+	# Build-time Python deps in an isolated PYTHONUSERBASE so they don't
+	# overwrite the shared python site-packages used by CuPy / PennyLane /
+	# cuQuantum-Python. Runtime deps are pulled in by the wheel install below.
+	# pybind11 must stay below 2.13 — newer versions shifted the cmake package
+	# layout in a way scikit-build can't find.
+	export PYTHONUSERBASE=$CUDA_QUANTUM_INSTALL_PREFIX
+	PIP_FLAGS="-v --user --force-reinstall --no-cache-dir"
+	python -m pip install $PIP_FLAGS "numpy>=1.24"
+	python -m pip install $PIP_FLAGS "scipy>=1.10.1"
+	python -m pip install $PIP_FLAGS "pybind11<2.13"
+	python -m pip install $PIP_FLAGS "pytest"
 	
         if [[ ! -d cuda-quantum ]]; then
-	    git clone -b $CUDA_QUANTUM_VERSION --depth 1 https://github.com/NVIDIA/cuda-quantum
-	    sed -Ei '/^export [A-Z_]+_INSTALL_PREFIX=/ s|^export ([A-Z_]+)=(.*)$|export \1=${\1:-\2}|' configure_build.sh
+	    # CUDA_QUANTUM_GIT_REF is either a release tag (e.g. 0.12.0, 0.14.0) or
+	    # a branch (e.g. main). --recurse-submodules brings in vendored
+	    # pybind11 (and on main, nanobind) that the CMakeLists expect.
+	    git clone --depth 1 --recurse-submodules -b "$CUDA_QUANTUM_GIT_REF" https://github.com/NVIDIA/cuda-quantum
+	    CUDAQ_BUILD_SHA=$(git -C cuda-quantum rev-parse --short HEAD)
+	    echo "cuda-q ${CUDA_QUANTUM_VERSION}: ${CUDA_QUANTUM_GIT_REF} @ ${CUDAQ_BUILD_SHA}"
+
+	    # Source-tree patches. Each one is version-guarded (grep -q) so the
+	    # same script works across 0.12 / 0.14 / main — older releases simply
+	    # skip patches whose target file or pattern isn't present.
+
+	    # P1: make upstream's *_INSTALL_PREFIX exports conditional so our values
+	    # survive `source configure_build.sh`. (All versions.)
+	    _F=cuda-quantum/scripts/configure_build.sh
+	    if [ -f "$_F" ] && grep -qE '^export [A-Z_]+_INSTALL_PREFIX=' "$_F"; then
+	        sed -Ei '/^export [A-Z_]+_INSTALL_PREFIX=/ s|^export ([A-Z_]+)=(.*)$|export \1=${\1:-\2}|' "$_F"
+	    fi
+
+	    # P2: aarch64 RHEL's GNUInstallDirs defaults curl to lib64/; the build
+	    # looks for lib/libcurl.a. (0.14 / main; 0.12 structure differs.)
+	    _F=cuda-quantum/scripts/install_prerequisites.sh
+	    if [ -f "$_F" ] && grep -q 'DCMAKE_INSTALL_PREFIX="\$CURL_INSTALL_PREFIX"' "$_F"; then
+	        sed -i 's|-DCMAKE_INSTALL_PREFIX="$CURL_INSTALL_PREFIX"|-DCMAKE_INSTALL_PREFIX="$CURL_INSTALL_PREFIX" -DCMAKE_INSTALL_LIBDIR=lib|' "$_F"
+	    fi
+
+	    # P3: CUDAToolkit_INCLUDE_DIRS is a list; `${VAR}/cccl` only appends
+	    # /cccl to the last entry. (0.14+ / main; 0.12 doesn't reference /cccl.)
+	    _F=cuda-quantum/runtime/nvqir/custatevec/CMakeLists.txt
+	    if [ -f "$_F" ] && grep -q '\${CUDAToolkit_INCLUDE_DIRS}/cccl' "$_F"; then
+	        sed -i '/find_package(CUDAToolkit REQUIRED)/a\
+set(_CUDAToolkit_CCCL_INCLUDE_DIRS "${CUDAToolkit_INCLUDE_DIRS}")\
+list(TRANSFORM _CUDAToolkit_CCCL_INCLUDE_DIRS APPEND "/cccl")' "$_F"
+	        sed -i 's|\${CUDAToolkit_INCLUDE_DIRS}/cccl|\${_CUDAToolkit_CCCL_INCLUDE_DIRS}|g' "$_F"
+	    fi
+
+	    # P4: install(EXPORT cudaq-targets) CheckInterfaceDirs rejects source-tree
+	    # paths leaking in transitively from LLVM/MLIR. (0.14+ / main; in 0.12 the
+	    # runtime/cudaq/CMakeLists.txt file isn't present.)
+	    _F=cuda-quantum/runtime/cudaq/CMakeLists.txt
+	    if [ -f "$_F" ] && grep -q 'install(TARGETS \${LIBRARY_NAME} EXPORT cudaq-targets' "$_F"; then
+	        sed -i '/^install(TARGETS \${LIBRARY_NAME} EXPORT cudaq-targets/i\
+set_target_properties(${LIBRARY_NAME} PROPERTIES\
+    INTERFACE_INCLUDE_DIRECTORIES "$<INSTALL_INTERFACE:include>")\
+' "$_F"
+	    fi
+
         fi
 
 	cd cuda-quantum/scripts
 
-	# Variables for LLVM build
 	export Python3_EXECUTABLE=$(which python)
 	export pybind11_DIR="$(python3 -m pybind11 --cmakedir)"
 
-	# Install missing prerequisites. Everything aside from CMake, Ninja, Zlib and OpenSSL.
 	LLVM_PROJECTS='clang;flang;lld;mlir;python-bindings;openmp;runtimes'
 	bash install_prerequisites.sh
 
@@ -136,30 +204,22 @@ do
 	export LIBRARY_PATH=$LLVM_INSTALL_PREFIX/lib:$LIBRARY_PATH
 	export LD_LIBRARY_PATH=$LLVM_INSTALL_PREFIX/lib:$LD_LIBRARY_PATH
 
-	#########################
-	# build and install nvq++
-	#########################
-
+	# nvq++
 	CUDAQ_WERROR=OFF CUDAQ_PYTHON_SUPPORT=FALSE bash build_cudaq.sh
 
-	# configure clang to use libstdc++ (GCC)
+	# The bundled clang++ defaults to libc++; force libstdc++ to match our gcc toolchain.
 	sed -i '1i --stdlib=libstdc++' $LLVM_INSTALL_PREFIX/bin/clang++.cfg
 
 	MPI_PATH=$MPI_HOME
 	cd $CUDAQ_INSTALL_PREFIX/distributed_interfaces
 	. activate_custom_mpi.sh
 
-
-	################################
-	# build and install cudaq-python
-	################################
-
+	# Python wheel
 	cd $CUDA_QUANTUM_BUILD_PREFIX/cuda-quantum
 	rm -rf _skbuild
 
 	python -m pip install --upgrade build
 
-	# build the wheel
 	CMAKE_PREFIX_PATH="$(dirname "$(dirname "$PYBIND11_INSTALL_PREFIX")"):$CMAKE_PREFIX_PATH" \
 	PATH="$LLVM_INSTALL_PREFIX/bin:$PATH" \
 	CPATH="$LLVM_INSTALL_PREFIX/include:$CPATH" \
@@ -179,8 +239,6 @@ do
 	PYTHONPATH="$PYTHONPATH:$PYBIND11_INSTALL_PREFIX" \
 	python3 -m build --wheel
 
-
-	# install the wheel
 	PYTHONUSERBASE=$CUDA_QUANTUM_INSTALL_PREFIX python3 -m pip install --user --no-deps dist/cuda_quantum*.whl
 
 	module unload python
@@ -191,7 +249,8 @@ do
 	sed -i "s|CUDAVERSION|$CUDA_MAJOR_MINOR_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|GCCVERSION|$GCC_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|NVHPCVERSION|$NVHPC_VERSION|g" "$MODULE_TEMP_PATH"
-	sed -i "s|CUQUANTUMVERSION|$CUQUANTUM_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|CUQUANTUMVERSION|$CUDA_QUANTUM_CUQUANTUM_VERSION|g" "$MODULE_TEMP_PATH"
+	sed -i "s|CUDAQPYSITEPACKAGES|$CUDA_QUANTUM_INSTALL_PREFIX/lib/python${PYTHON_VERSION:0:4}/site-packages|g" "$MODULE_TEMP_PATH"
 	sed -i "s|PYTHONVERSION|$PYTHON_VERSION|g" "$MODULE_TEMP_PATH"
 	sed -i "s|CUDAQROOT|$CUDAQ_INSTALL_PREFIX|g" "$MODULE_TEMP_PATH"
 	mkdir -p $CUDAQ_MODULE_PREFIX

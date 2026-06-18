@@ -9,7 +9,7 @@ PYTHON_C_COMPILER=$(which gcc)
 PYTHON_CXX_COMPILER=$(which g++)
 
 module load nvhpc/$NVHPC_VERSION
-module load cutensor/$CUTENSOR_VERSION
+module load cutensor/$CUPY_CUTENSOR_VERSION
 
 CUDA_MAJOR_MINOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1] "." a[2]}')
 	
@@ -43,8 +43,12 @@ do
 	CUPY_INSTALL_PREFIX="$INSTALL_PREFIX/py-$PYTHON_VERSION-cupy-$CUPY_VERSION"
 	CUPY_MODULE_PREFIX="$MODULE_PREFIX/py-$PYTHON_VERSION-cupy"
 
+	if [[ -d "$CUPY_INSTALL_PREFIX" ]]; then
+		echo "CuPy $CUPY_VERSION for Python $PYTHON_VERSION already installed. Skipping."
+		continue
+	fi
+
 	module load python/$PYTHON_VERSION
-	# Install CuPy
 	mkdir -p $CUPY_INSTALL_PREFIX
 	
 	rm -rf cupy
@@ -74,5 +78,5 @@ do
 
 done
 
-module unload cutensor/$CUTENSOR_VERSION
+module unload cutensor/$CUPY_CUTENSOR_VERSION
 module unload nvhpc

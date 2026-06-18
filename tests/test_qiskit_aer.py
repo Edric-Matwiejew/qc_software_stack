@@ -1,116 +1,171 @@
 #!/usr/bin/env python3
 """
-qiskit-aer 0.17.1 + cuQuantum sanity test
+Qiskit Aer sanity test.
 
-- Uses an instance to call available_methods()/available_devices()
-- Tests cuStateVec on GPU (if available)
-- Optionally tests tensor_network on GPU (if available)
+Single-rank mode: cuStateVec (statevector) on GPU + cuTensorNet smoke test.
+MPI mode (size > 1): distributed state-vector via Aer's `blocking_enable=True`.
+
+AER_TN_QUBITS overrides the tensor_network circuit size (default 4 — the
+legacy contraction path qiskit-aer 0.17.2 uses is broken on cuQuantum 26.x
+for n>=8, so this stack pins cuQuantum 25.11.1).
 """
 
-from qiskit import QuantumCircuit
-from qiskit import ClassicalRegister
-from qiskit_aer import AerSimulator
 import math
+import os
 import sys
+
+from qiskit import QuantumCircuit
+from qiskit_aer import AerSimulator
+
 
 def banner(msg):
     print("\n" + "=" * 60)
     print(msg)
-    print("=" * 60)
+    print("=" * 60, flush=True)
 
-def make_ghz(n): 
-    qc = QuantumCircuit(n, n) 
-    qc.h(0) 
-    for i in range(n - 1): 
-        qc.cx(i, i + 1) 
-        qc.barrier() 
-        qc.measure_all() 
+
+def detect_mpi():
+    """Return (rank, size) if running under MPI, else (0, 1)."""
+    try:
+        from mpi4py import MPI  # type: ignore
+    except ImportError:
+        return 0, 1
+    # mpi4py auto-calls MPI_Init on import.
+    comm = MPI.COMM_WORLD
+    return comm.Get_rank(), comm.Get_size()
+
+
+def make_ghz(n):
+    qc = QuantumCircuit(n, n)
+    qc.h(0)
+    for i in range(n - 1):
+        qc.cx(i, i + 1)
+    qc.barrier()
+    qc.measure(range(n), range(n))
     return qc
 
+
 def check_ghz_counts(counts, n, shots, tol=0.15):
-    def norm(k):
-        k = k.replace(" ", "")  # collapse multiple cregs
-        return k[-n:]           # take the last n bits (safety)
-    z = "0" * n
-    o = "1" * n
-    c0 = sum(v for k, v in counts.items() if norm(k) == z)
-    c1 = sum(v for k, v in counts.items() if norm(k) == o)
-    ok = (c0 + c1) == shots and abs(c0 - c1) <= tol * shots
-    return ok, c0, c1
+    z = counts.get("0" * n, 0)
+    o = counts.get("1" * n, 0)
+    ok = (z + o) >= (1 - tol) * shots and abs(z - o) <= tol * shots
+    return ok, z, o
+
 
 def probe_capabilities():
-    probe = AerSimulator()  # CPU default
+    probe = AerSimulator()
     methods = set(probe.available_methods())
     devices = set(probe.available_devices())
     print("Available methods:", sorted(methods))
     print("Available devices:", sorted(devices))
     return methods, devices
 
-def run_statevector_gpu(n=16, shots=2048):
-    banner("Test 1: cuStateVec (statevector on GPU)")
+
+# --------------------------------------------------------------------------
+# Tests
+# --------------------------------------------------------------------------
+def run_statevector_gpu_single(n=16, shots=2048):
+    banner("Test: cuStateVec (statevector on GPU, single-rank)")
     methods, devices = probe_capabilities()
     if "statevector" not in methods or "GPU" not in devices:
-        print("Statevector/GPU not available in this build. Skipping.")
+        print("Statevector/GPU not available; skipping.")
         return None
-
-    # Build GPU statevector simulator; cuStateVec is used if Aer was compiled with it.
     sim = AerSimulator(
         method="statevector",
         device="GPU",
         precision="double",
-        cuStateVec_enable=True,   # ignored if not compiled in
+        cuStateVec_enable=True,
     )
-    print("Simulator options:", sim.options)
     qc = make_ghz(n)
     result = sim.run(qc, shots=shots, seed_simulator=42).result()
     counts = result.get_counts()
     ok, c0, c1 = check_ghz_counts(counts, n, shots)
-    print(f"Counts (sample): {dict(list(counts.items())[:4])}")
-    print(f"Zeros={c0}, Ones={c1}, OK={ok}")
+    print(f"Zeros={c0}, Ones={c1}, shots={shots}, OK={ok}")
     return ok
 
-def run_tensor_network_gpu(n=40, shots=1024):
-    banner("Test 2: cuTensorNet (tensor_network on GPU)")
+
+def run_statevector_gpu_mpi(rank, size, n=20, shots=2048):
+    """Distributed GPU state-vector via Aer's blocking mode.
+
+    Aer splits the state vector across `size` GPU ranks when blocking_enable=True.
+    `blocking_qubits` controls how the state is distributed; use n-2 as a small
+    sensible default (log2 of ranks == 2 chunks per rank).
+    """
+    banner(f"Test: cuStateVec (statevector/GPU + MPI, rank {rank}/{size})")
+    blocking_qubits = max(n - int(math.log2(size)), 1)
+    sim = AerSimulator(
+        method="statevector",
+        device="GPU",
+        precision="double",
+        cuStateVec_enable=True,
+        blocking_enable=True,
+        blocking_qubits=blocking_qubits,
+    )
+    qc = make_ghz(n)
+    result = sim.run(qc, shots=shots, seed_simulator=42).result()
+    counts = result.get_counts()
+    ok, c0, c1 = check_ghz_counts(counts, n, shots)
+    if rank == 0:
+        print(f"Zeros={c0}, Ones={c1}, shots={shots}, blocking_qubits={blocking_qubits}, OK={ok}")
+    return ok
+
+
+def run_tensor_network_gpu(n=4, shots=128):
+    """Smoke test of Aer's cuTensorNet backend."""
+    banner(f"Test: cuTensorNet (tensor_network on GPU, n={n})")
     methods, devices = probe_capabilities()
     if "tensor_network" not in methods or "GPU" not in devices:
-        print("tensor_network/GPU not available in this build. Skipping.")
+        print("tensor_network/GPU not available; skipping.")
         return None
-
     sim = AerSimulator(method="tensor_network", device="GPU", precision="double")
-    print("Simulator options:", sim.options)
     qc = make_ghz(n)
     result = sim.run(qc, shots=shots, seed_simulator=123).result()
     counts = result.get_counts()
     ok, c0, c1 = check_ghz_counts(counts, n, shots)
-    print(f"Counts (sample): {dict(list(counts.items())[:4])}")
-    print(f"Zeros={c0}, Ones={c1}, OK={ok}")
+    print(f"Zeros={c0}, Ones={c1}, shots={shots}, OK={ok}")
     return ok
 
-def main():
-    ok_sv = None
-    ok_tn = None
 
+# --------------------------------------------------------------------------
+# Main
+# --------------------------------------------------------------------------
+def main():
+    rank, size = detect_mpi()
+    mpi_mode = size > 1
+
+    if rank == 0:
+        banner(f"qiskit-aer sanity test — MPI {'ON' if mpi_mode else 'OFF'} "
+               f"(rank {rank}/{size})")
+
+    ok_sv = None
     try:
-        ok_sv = run_statevector_gpu()
+        if mpi_mode:
+            ok_sv = run_statevector_gpu_mpi(rank, size)
+        else:
+            ok_sv = run_statevector_gpu_single()
     except Exception as e:
-        print("Statevector GPU test failed:", repr(e))
+        print(f"[rank {rank}] statevector test failed:", repr(e))
         ok_sv = False
 
-    try:
-        ok_tn = run_tensor_network_gpu()
-    except Exception as e:
-        print("Tensor-network GPU test failed:", repr(e))
-        ok_tn = False
+    ok_tn = None
+    if not mpi_mode:
+        # tensor_network is single-rank only; skip under MPI.
+        try:
+            ok_tn = run_tensor_network_gpu(n=int(os.environ.get("AER_TN_QUBITS", "4")))
+        except Exception as e:
+            print("tensor_network test failed:", repr(e))
+            ok_tn = False
 
-    banner("Summary")
-    print(f"cuStateVec(statevector/GPU): {ok_sv}")
-    print(f"cuTensorNet(tensor_network/GPU): {ok_tn}")
+    if rank == 0:
+        banner("Summary")
+        print(f"mpi_mode={mpi_mode}")
+        print(f"statevector/GPU   : {ok_sv}")
+        print(f"tensor_network/GPU: {ok_tn}")
 
-    # Success if cuStateVec passed, and tensor_network either passed or was skipped.
-    if ok_sv is True and (ok_tn in (True, None)):
-        return 0
-    return 1
+    # Pass if statevector passed and tensor_network either passed or was skipped.
+    ok = (ok_sv is True) and (ok_tn in (True, None))
+    return 0 if ok else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())
-

@@ -5,6 +5,11 @@ module load cmake/$CMAKE_VERSION
 
 NINJA_INSTALL_PREFIX=$INSTALL_PREFIX/ninja-$NINJA_VERSION
 
+if [[ -f "$NINJA_INSTALL_PREFIX/bin/ninja" ]]; then
+    echo "Ninja $NINJA_VERSION already installed. Skipping."
+    exit 0
+fi
+
 export CC=$(which gcc)
 export CXX=$(which g++)
 

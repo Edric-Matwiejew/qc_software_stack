@@ -15,6 +15,11 @@ for CMAKE_VERSION in "${CMAKE_VERSIONS[@]}"
 do
 
 	CMAKE_INSTALL_PREFIX=$INSTALL_PREFIX/cmake-$CMAKE_VERSION
+
+	if [[ -d "$CMAKE_INSTALL_PREFIX" ]]; then
+		echo "CMake $CMAKE_VERSION already installed. Skipping."
+		continue
+	fi
 	mkdir -p $CMAKE_INSTALL_PREFIX
 
 	git clone --depth 1 --branch v$CMAKE_VERSION https://github.com/Kitware/CMake
@@ -36,3 +41,10 @@ do
 	mv $MODULE_TEMP_PATH $MODULE_PREFIX/cmake/$CMAKE_VERSION.lua
 
 done
+
+# Pin the default cmake module to $CMAKE_VERSION so `module load cmake` (without
+# version) doesn't pick a stale higher-numbered .lua left from a previous bump.
+cat <<EOF > "$MODULE_PREFIX/cmake/.version"
+#%Module -*- tcl -*-
+set ModulesVersion "$CMAKE_VERSION"
+EOF

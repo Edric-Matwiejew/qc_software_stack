@@ -14,7 +14,12 @@ cd $BUILD_TOOLS_BUILD_PREFIX
 for PYTHON_VERSION in "${PYTHON_VERSIONS[@]}"
 do
 	PYTHON_INSTALL_PREFIX=$INSTALL_PREFIX/python-$PYTHON_VERSION
-	
+
+	if [[ -f "$PYTHON_INSTALL_PREFIX/bin/python3" ]]; then
+		echo "Python $PYTHON_VERSION already installed. Skipping."
+		continue
+	fi
+
 	mkdir -p $PYTHON_INSTALL_PREFIX
 
 	export PATH=$PYTHON_INSTALL_PREFIX/bin:$PATH
