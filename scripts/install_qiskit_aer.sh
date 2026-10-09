@@ -10,9 +10,12 @@ module load nvhpc/$NVHPC_VERSION
 module load cuquantum/$QISKIT_AER_CUQUANTUM_VERSION
 module load cutensor/$QISKIT_AER_CUTENSOR_VERSION
 
+export CUDA_PATH=$NVHPC_ROOT/cuda/13.1
+export CUDACXX=$CUDA_PATH/bin/nvcc
+export PATH=$CUDA_PATH/bin:$PATH
+
 CUDA_MAJOR_VERSION=$(nvcc --version | grep -o "release [0-9]\+\.[0-9]\+" | awk '{split($2, a, "."); print a[1]}')
 
-CUDA_PATH=$NVHPC_ROOT/cuda
 CC=$(which gcc)
 CXX=$(which g++)
 
