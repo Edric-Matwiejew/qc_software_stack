@@ -65,7 +65,7 @@ EOF
 	# AER_CUDA_ARCH goes into legacy FindCUDA which only accepts dotted form (not "90").
 	export AER_CUDA_ARCH="9.0"
 
-	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall scikit-build>=0.11.0
+	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall "scikit-build>=0.11.0"
 	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall conan==1.65.0
 	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall "pybind11<2.13"
 	PYTHONUSERBASE="$QISKIT_AER_INSTALL_PREFIX" python -m pip install --user --force-reinstall numpy==2.0.1
